@@ -5,7 +5,7 @@
 // Created On: 	    4/14/2022, 9:00 AM
 // Last Edit:		4/14/2020, 9:00 AM
 // Version:			1.00
-// Special Thanks:  Interkarma, Jefetienne, Hazelnut, Kab the Bird Ranger, Macadaynu, Ralzar, Billyloist 
+// Special Thanks:  Interkarma, Jefetienne, Hazelnut, Kab the Bird Ranger, Macadaynu, Ralzar, Billyloist
 // Modifier:
 
 using DaggerfallWorkshop.Game;
@@ -21,6 +21,7 @@ using DaggerfallWorkshop.Game.MagicAndEffects.MagicEffects;
 using DaggerfallWorkshop.Game.Formulas;
 using DaggerfallWorkshop;
 using Wenzil.Console;
+using DaggerfallWorkshop.Game.Items;
 
 namespace UsefulConsoleCommands
 {
@@ -104,13 +105,16 @@ namespace UsefulConsoleCommands
             return RestRegenModifier;
         }
 
-        public static void RegisterModConsoleCommands() // This right now is just testing for a mod I plan to make that will allow the use of a whole bunch of useful console commands.
+        public static void RegisterModConsoleCommands()
         {
             Debug.Log("[UsefulConsoleCommands] Trying to register console commands.");
             try
             {
                 ConsoleCommandsDatabase.RegisterCommand(ChangePlayerAttribute.command, ChangePlayerAttribute.description, ChangePlayerAttribute.usage, ChangePlayerAttribute.Execute);
                 ConsoleCommandsDatabase.RegisterCommand(ChangePlayerSkill.command, ChangePlayerSkill.description, ChangePlayerSkill.usage, ChangePlayerSkill.Execute);
+                ConsoleCommandsDatabase.RegisterCommand(EmptyInventory.command, EmptyInventory.description, EmptyInventory.usage, EmptyInventory.Execute);
+                ConsoleCommandsDatabase.RegisterCommand(CreateInfiniteTorch.command, CreateInfiniteTorch.description, CreateInfiniteTorch.usage, CreateInfiniteTorch.Execute);
+                ConsoleCommandsDatabase.RegisterCommand(CleanupCorpses.command, CleanupCorpses.description, CleanupCorpses.usage, CleanupCorpses.Execute);
                 ConsoleCommandsDatabase.RegisterCommand(ListRegions.command, ListRegions.description, ListRegions.usage, ListRegions.Execute);
             }
             catch (Exception e)
@@ -509,6 +513,133 @@ namespace UsefulConsoleCommands
                             return string.Format("All skills were set to {0}.", n);
                         default:
                             return "Invalid skill, try something like: 'setattrib bluntweapon 75' or 'setskill jump 30' or 'setskill 8 95' or even 'setskill all 60'";
+                    }
+                }
+                else
+                    return "Error - Something went wrong.";
+            }
+        }
+
+        private static class EmptyInventory
+        {
+            public static readonly string command = "emptyinventory";
+            public static readonly string description = "Removes everything from your inventory, add additional modifier for more control of what is removed.";
+            public static readonly string usage = "emptyinventory [modifier]; try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon'. Without any modifier word, quest items, light sources, horse, wagon, and the spellbook will be preserved.";
+
+            public static string Execute(params string[] args)
+            {
+                if (args.Length > 1) return "Invalid entry, see usage notes.";
+
+                GameObject player = GameManager.Instance.PlayerObject;
+                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
+                ItemCollection playerItems = playerEntity.Items;
+                ItemCollection wagonItems = playerEntity.WagonItems;
+
+                if (player != null)
+                {
+                    switch (args[0])
+                    {
+                        case "all":
+                        case "clear":
+                        case "everything":
+                        case "completely":
+                            playerItems.Clear(); // This command clears literally everything from your inventory.
+                            return "Removed ALL items from your inventory.";
+                        case "wagon":
+                        case "cart":
+                            wagonItems.Clear(); // This command clears everything from your wagon inventory.
+                            return "Removed all items from your wagon inventory.";
+                        default:
+                            if (args.Length >= 1)
+                                return "Invalid attribute, try something like: try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon'. Without any modifier word, quest items, light sources, horse, wagon, and the spellbook will be preserved.";
+
+                            ItemCollection newPlayerItems = playerItems;
+                            for (int i = 0; i < playerItems.Count; i++)
+                            {
+                                DaggerfallUnityItem item = playerEntity.Items.GetItem(i);
+
+                                if (item.IsQuestItem || item.IsLightSource || item.ItemGroup == ItemGroups.Transportation || (item.ItemGroup == ItemGroups.MiscItems && item.TemplateIndex == (int)MiscItems.Spellbook) || (item.ItemGroup == ItemGroups.UselessItems2 && item.TemplateIndex == (int)UselessItems2.Oil))
+                                    continue; // By default, ignore quest items, light sources, horse, wagon, and the spellbook item.
+                                else
+                                    newPlayerItems.RemoveItem(item);
+                            }
+                            playerItems.ReplaceAll(newPlayerItems);
+                            return "Removed all items from your inventory excluding quest-items, light sources, horse, wagon, and spellbook.";
+                    }
+                }
+                else
+                    return "Error - Something went wrong.";
+            }
+        }
+
+        private static class CreateInfiniteTorch
+        {
+            public static readonly string command = "infinitetorch";
+            public static readonly string description = "Creates a torch item with practically infinite durability that won't burn out.";
+            public static readonly string usage = "infinitetorch; try something like: 'infinitetorch'.";
+
+            public static string Execute(params string[] args)
+            {
+                if (args.Length > 0) return "Invalid entry, see usage notes.";
+
+                GameObject player = GameManager.Instance.PlayerObject;
+                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
+                ItemCollection playerItems = playerEntity.Items;
+
+                if (player != null)
+                {
+                    DaggerfallUnityItem item = ItemBuilder.CreateItem(ItemGroups.UselessItems2, (int)UselessItems2.Torch);
+                    item.RenameItem("Infinite Torch");
+                    item.maxCondition = 999999;
+                    item.currentCondition = 999999;
+                    playerItems.AddItem(item);
+                    return "Created the 'Infinite Torch', with this you will never be left in the dark.";
+                }
+                else
+                    return "Error - Something went wrong.";
+            }
+        }
+
+        private static class CleanupCorpses
+        {
+            public static readonly string command = "clearcorpses";
+            public static readonly string description = "Destroys all corpse objects from the current scene, add modifier words to specify different types to remove.";
+            public static readonly string usage = "clearcorpses [modifier]; try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon'. Without any modifier word, quest items, light sources, horse, wagon, and the spellbook will be preserved.";
+
+            public static string Execute(params string[] args)
+            {
+                if (args.Length > 1) return "Invalid entry, see usage notes.";
+
+                GameObject player = GameManager.Instance.PlayerObject;
+                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
+
+                if (player != null)
+                {
+                    switch (args[0])
+                    {
+                        case "all":
+                        case "clear":
+                            return "Removed ALL items from your inventory.";
+                        default:
+                            if (args.Length >= 1)
+                                return "Invalid attribute, try something like: try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon'. Without any modifier word, quest items, light sources, horse, wagon, and the spellbook will be preserved.";
+
+                            int count = 0;
+                            DaggerfallLoot[] lootContainers = FindObjectsOfType<DaggerfallLoot>();
+                            if (lootContainers != null)
+                            {
+                                for (int i = 0; i < lootContainers.Length; i++)
+                                {
+                                    GameObject gameObject = lootContainers[i].gameObject;
+
+                                    if (lootContainers[i].ContainerType == LootContainerTypes.CorpseMarker)
+                                    {
+                                        Destroy(gameObject);
+                                        count++;
+                                    }
+                                }
+                            }
+                            return string.Format("Removed {0} corpses.", count);
                     }
                 }
                 else
