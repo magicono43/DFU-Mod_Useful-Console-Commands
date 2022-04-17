@@ -3,7 +3,7 @@
 // License:         MIT License (http://www.opensource.org/licenses/mit-license.php)
 // Author:          Kirk.O
 // Created On: 	    4/14/2022, 9:00 AM
-// Last Edit:		4/14/2020, 9:00 AM
+// Last Edit:		4/17/2020, 5:00 PM
 // Version:			1.00
 // Special Thanks:  Interkarma, Jefetienne, Hazelnut, Kab the Bird Ranger, Macadaynu, Ralzar, Billyloist
 // Modifier:
@@ -110,11 +110,12 @@ namespace UsefulConsoleCommands
             Debug.Log("[UsefulConsoleCommands] Trying to register console commands.");
             try
             {
-                ConsoleCommandsDatabase.RegisterCommand(ChangePlayerAttribute.command, ChangePlayerAttribute.description, ChangePlayerAttribute.usage, ChangePlayerAttribute.Execute);
-                ConsoleCommandsDatabase.RegisterCommand(ChangePlayerSkill.command, ChangePlayerSkill.description, ChangePlayerSkill.usage, ChangePlayerSkill.Execute);
-                ConsoleCommandsDatabase.RegisterCommand(EmptyInventory.command, EmptyInventory.description, EmptyInventory.usage, EmptyInventory.Execute);
-                ConsoleCommandsDatabase.RegisterCommand(CreateInfiniteTorch.command, CreateInfiniteTorch.description, CreateInfiniteTorch.usage, CreateInfiniteTorch.Execute);
-                ConsoleCommandsDatabase.RegisterCommand(CleanupCorpses.command, CleanupCorpses.description, CleanupCorpses.usage, CleanupCorpses.Execute);
+                ConsoleCommandsDatabase.RegisterCommand(ChangePlayerAttribute.command, ChangePlayerAttribute.description, ChangePlayerAttribute.usage, ChangePlayerAttribute.Execute); // tested
+                ConsoleCommandsDatabase.RegisterCommand(ChangePlayerSkill.command, ChangePlayerSkill.description, ChangePlayerSkill.usage, ChangePlayerSkill.Execute); // tested
+                ConsoleCommandsDatabase.RegisterCommand(EmptyInventory.command, EmptyInventory.description, EmptyInventory.usage, EmptyInventory.Execute); // tested
+                ConsoleCommandsDatabase.RegisterCommand(CreateInfiniteTorch.command, CreateInfiniteTorch.description, CreateInfiniteTorch.usage, CreateInfiniteTorch.Execute); // tested
+                ConsoleCommandsDatabase.RegisterCommand(CleanupCorpses.command, CleanupCorpses.description, CleanupCorpses.usage, CleanupCorpses.Execute); // tested
+                ConsoleCommandsDatabase.RegisterCommand(LetMeSleep.command, LetMeSleep.description, LetMeSleep.usage, LetMeSleep.Execute); // tested
                 ConsoleCommandsDatabase.RegisterCommand(ListRegions.command, ListRegions.description, ListRegions.usage, ListRegions.Execute);
             }
             catch (Exception e)
@@ -520,7 +521,7 @@ namespace UsefulConsoleCommands
             }
         }
 
-        private static class EmptyInventory
+        private static class EmptyInventory // Might need to add more modifiers eventually for more control but that's fine, it works fine for now.
         {
             public static readonly string command = "emptyinventory";
             public static readonly string description = "Removes everything from your inventory, add additional modifier for more control of what is removed.";
@@ -534,8 +535,27 @@ namespace UsefulConsoleCommands
                 PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
                 ItemCollection playerItems = playerEntity.Items;
                 ItemCollection wagonItems = playerEntity.WagonItems;
+                int invSize = playerItems.Count;
+                int h = 0;
 
-                if (player != null)
+                if (player != null && args.Length == 0)
+                {
+                    for (int i = 0; i < invSize; i++)
+                    {
+                        DaggerfallUnityItem item = playerEntity.Items.GetItem(h);
+                        h++;
+
+                        if (item.IsQuestItem || item.IsLightSource || item.ItemGroup == ItemGroups.Transportation || (item.ItemGroup == ItemGroups.MiscItems && item.TemplateIndex == (int)MiscItems.Spellbook) || (item.ItemGroup == ItemGroups.MiscItems && item.TemplateIndex == (int)MiscItems.Letter_of_credit) || (item.ItemGroup == ItemGroups.UselessItems2 && item.TemplateIndex == (int)UselessItems2.Oil))
+                            continue; // By default, ignore quest items, light sources, horse, wagon, letters of credit, and the spellbook item.
+                        else
+                        {
+                            playerItems.RemoveItem(item);
+                            h--;
+                        }
+                    }
+                    return "Removed all items from your inventory excluding quest-items, light sources, horse, wagon, letters of credit, and spellbook.";
+                }
+                else if (player != null && args.Length != 0)
                 {
                     switch (args[0])
                     {
@@ -543,28 +563,16 @@ namespace UsefulConsoleCommands
                         case "clear":
                         case "everything":
                         case "completely":
+                            playerEntity.GoldPieces = 0;
+                            playerEntity.LightSource = null;
                             playerItems.Clear(); // This command clears literally everything from your inventory.
-                            return "Removed ALL items from your inventory.";
+                            return "Removed ALL items from your inventory, including gold.";
                         case "wagon":
                         case "cart":
                             wagonItems.Clear(); // This command clears everything from your wagon inventory.
                             return "Removed all items from your wagon inventory.";
                         default:
-                            if (args.Length >= 1)
-                                return "Invalid attribute, try something like: try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon'. Without any modifier word, quest items, light sources, horse, wagon, and the spellbook will be preserved.";
-
-                            ItemCollection newPlayerItems = playerItems;
-                            for (int i = 0; i < playerItems.Count; i++)
-                            {
-                                DaggerfallUnityItem item = playerEntity.Items.GetItem(i);
-
-                                if (item.IsQuestItem || item.IsLightSource || item.ItemGroup == ItemGroups.Transportation || (item.ItemGroup == ItemGroups.MiscItems && item.TemplateIndex == (int)MiscItems.Spellbook) || (item.ItemGroup == ItemGroups.UselessItems2 && item.TemplateIndex == (int)UselessItems2.Oil))
-                                    continue; // By default, ignore quest items, light sources, horse, wagon, and the spellbook item.
-                                else
-                                    newPlayerItems.RemoveItem(item);
-                            }
-                            playerItems.ReplaceAll(newPlayerItems);
-                            return "Removed all items from your inventory excluding quest-items, light sources, horse, wagon, and spellbook.";
+                            return "Invalid attribute, try something like: try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon'. Without any modifier word, quest items, light sources, horse, wagon, letters of credit, and the spellbook will be preserved.";
                     }
                 }
                 else
@@ -604,7 +612,7 @@ namespace UsefulConsoleCommands
         {
             public static readonly string command = "clearcorpses";
             public static readonly string description = "Destroys all corpse objects from the current scene, add modifier words to specify different types to remove.";
-            public static readonly string usage = "clearcorpses [modifier]; try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon'. Without any modifier word, quest items, light sources, horse, wagon, and the spellbook will be preserved.";
+            public static readonly string usage = "clearcorpses [modifier]; try something like: 'clearcorpses' or 'clearcorpses all'. Without any modifier only corpses are removed, if 'all' is used, all loot-piles are removed from the current scene.";
 
             public static string Execute(params string[] args)
             {
@@ -612,35 +620,103 @@ namespace UsefulConsoleCommands
 
                 GameObject player = GameManager.Instance.PlayerObject;
                 PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
+                DaggerfallLoot[] lootContainers = FindObjectsOfType<DaggerfallLoot>();
+                int count = 0;
 
-                if (player != null)
+                if (player != null && args.Length == 0)
+                {
+                    if (lootContainers != null)
+                    {
+                        for (int i = 0; i < lootContainers.Length; i++)
+                        {
+                            GameObject gameObject = lootContainers[i].gameObject;
+
+                            if (lootContainers[i].ContainerType == LootContainerTypes.CorpseMarker)
+                            {
+                                Destroy(gameObject);
+                                count++;
+                            }
+                        }
+                    }
+                    return string.Format("Removed {0} corpses.", count);
+                }
+                else if (player != null && args.Length != 0)
                 {
                     switch (args[0])
                     {
                         case "all":
-                        case "clear":
-                            return "Removed ALL items from your inventory.";
-                        default:
-                            if (args.Length >= 1)
-                                return "Invalid attribute, try something like: try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon'. Without any modifier word, quest items, light sources, horse, wagon, and the spellbook will be preserved.";
-
-                            int count = 0;
-                            DaggerfallLoot[] lootContainers = FindObjectsOfType<DaggerfallLoot>();
+                        case "everything":
                             if (lootContainers != null)
                             {
                                 for (int i = 0; i < lootContainers.Length; i++)
                                 {
                                     GameObject gameObject = lootContainers[i].gameObject;
 
-                                    if (lootContainers[i].ContainerType == LootContainerTypes.CorpseMarker)
+                                    if (lootContainers[i].ContainerType == LootContainerTypes.CorpseMarker || lootContainers[i].ContainerType == LootContainerTypes.RandomTreasure || lootContainers[i].ContainerType == LootContainerTypes.DroppedLoot)
                                     {
                                         Destroy(gameObject);
                                         count++;
                                     }
                                 }
                             }
-                            return string.Format("Removed {0} corpses.", count);
+                            return string.Format("Removed {0} corpses and loot-piles.", count);
+                        default:
+                            return "Invalid attribute, try something like: 'clearcorpses' or 'clearcorpses all'. Without any modifier only corpses are removed, if 'all' is used, all loot-piles are removed from the current scene.";
                     }
+                }
+                else
+                    return "Error - Something went wrong.";
+            }
+        }
+
+        private static class LetMeSleep
+        {
+            public static readonly string command = "letmesleep";
+            public static readonly string description = "Kills all enemies within range that may be disallowing you to rest, but leaves others otherside this range alive.";
+            public static readonly string usage = "letmesleep; try something like: 'letmesleep'.";
+
+            public static string Execute(params string[] args)
+            {
+                if (args.Length > 0) return "Invalid entry, see usage notes.";
+
+                GameObject player = GameManager.Instance.PlayerObject;
+                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
+                DaggerfallEntityBehaviour[] entityBehaviours = FindObjectsOfType<DaggerfallEntityBehaviour>();
+                int count = 0;
+
+                if (player != null)
+                {
+                    for (int i = 0; i < entityBehaviours.Length; i++)
+                    {
+                        DaggerfallEntityBehaviour entityBehaviour = entityBehaviours[i];
+                        if (entityBehaviour.EntityType == EntityTypes.EnemyMonster || entityBehaviour.EntityType == EntityTypes.EnemyClass)
+                        {
+                            EnemySenses enemySenses = entityBehaviour.GetComponent<EnemySenses>();
+                            if (enemySenses)
+                            {
+                                // Check if enemy can actively target player
+                                bool enemyCanSeePlayer = enemySenses.Target == GameManager.Instance.PlayerEntityBehaviour && enemySenses.TargetInSight;
+
+                                // Allow for a shorter test distance if enemy is unaware of player while resting
+                                if (!enemyCanSeePlayer && Vector3.Distance(entityBehaviour.transform.position, GameManager.Instance.PlayerController.transform.position) > 12f) // 12f is "restingDistance"
+                                    continue;
+
+                                // Can enemy see player or is close enough they would be spawned in classic?
+                                if (enemyCanSeePlayer || enemySenses.WouldBeSpawnedInClassic)
+                                {
+                                    // Is it hostile or pacified?
+                                    EnemyMotor enemyMotor = entityBehaviour.GetComponent<EnemyMotor>();
+                                    EnemyEntity enemyEntity = entityBehaviour.Entity as EnemyEntity;
+                                    if (enemyMotor.IsHostile && enemyEntity.MobileEnemy.Team != MobileTeams.PlayerAlly)
+                                    {
+                                        entityBehaviour.Entity.SetHealth(0);
+                                        count++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return string.Format("Killed: {0} enemies, that would be disallowing you to rest.", count);
                 }
                 else
                     return "Error - Something went wrong.";
