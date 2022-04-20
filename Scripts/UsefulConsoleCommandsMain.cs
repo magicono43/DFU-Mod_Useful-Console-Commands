@@ -22,6 +22,8 @@ using DaggerfallWorkshop.Game.Formulas;
 using DaggerfallWorkshop;
 using Wenzil.Console;
 using DaggerfallWorkshop.Game.Items;
+using DaggerfallWorkshop.Game.UserInterfaceWindows;
+using DaggerfallConnect;
 
 namespace UsefulConsoleCommands
 {
@@ -116,6 +118,7 @@ namespace UsefulConsoleCommands
                 ConsoleCommandsDatabase.RegisterCommand(CreateInfiniteTorch.command, CreateInfiniteTorch.description, CreateInfiniteTorch.usage, CreateInfiniteTorch.Execute); // tested
                 ConsoleCommandsDatabase.RegisterCommand(CleanupCorpses.command, CleanupCorpses.description, CleanupCorpses.usage, CleanupCorpses.Execute); // tested
                 ConsoleCommandsDatabase.RegisterCommand(LetMeSleep.command, LetMeSleep.description, LetMeSleep.usage, LetMeSleep.Execute); // tested
+                ConsoleCommandsDatabase.RegisterCommand(OpenShop.command, OpenShop.description, OpenShop.usage, OpenShop.Execute);
                 ConsoleCommandsDatabase.RegisterCommand(ListRegions.command, ListRegions.description, ListRegions.usage, ListRegions.Execute);
             }
             catch (Exception e)
@@ -717,6 +720,53 @@ namespace UsefulConsoleCommands
                         }
                     }
                     return string.Format("Killed: {0} enemies, that would be disallowing you to rest.", count);
+                }
+                else
+                    return "Error - Something went wrong.";
+            }
+        }
+
+        private static class OpenShop
+        {
+            public static readonly string command = "openshop";
+            public static readonly string description = "Removes everything from your inventory, add additional modifier for more control of what is removed.";
+            public static readonly string usage = "openshop [modifier]; try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon'. Without any modifier word, quest items, light sources, horse, wagon, and the spellbook will be preserved.";
+
+            public static string Execute(params string[] args)
+            {
+                if (args.Length > 1) return "Invalid entry, see usage notes.";
+
+                GameObject player = GameManager.Instance.PlayerObject;
+                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
+                ItemCollection playerItems = playerEntity.Items;
+                ItemCollection shopItems = null;
+                UCCShopWindow tradeWindow = new UCCShopWindow(DaggerfallUI.UIManager, null, UCCShopWindow.WindowModes.Buy, null);
+
+                //
+                DaggerfallUI.UIManager.PushWindow(tradeWindow);
+                //
+
+                if (player != null && args.Length == 0)
+                {
+                    tradeWindow.MerchantItems = UCCShopWindow.StockMagicShopShelf(shopItems, args);
+
+                    return "Removed all items from your inventory excluding quest-items, light sources, horse, wagon, letters of credit, and spellbook.";
+                }
+                else if (player != null && args.Length != 0)
+                {
+                    switch (args[0])
+                    {
+                        case "all":
+                        case "clear":
+                        case "everything":
+                        case "completely":
+                            playerEntity.GoldPieces = 0;
+                            playerEntity.LightSource = null;
+                            playerItems.Clear(); // This command clears literally everything from your inventory.
+                            return "Removed ALL items from your inventory, including gold.";
+                        default:
+                            return "Invalid attribute, try something like: try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon'. Without any modifier word, quest items, light sources, horse, wagon, letters of credit, and the spellbook will be preserved.";
+                    }
                 }
                 else
                     return "Error - Something went wrong.";
