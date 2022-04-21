@@ -350,12 +350,16 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                         items = AddAllClothingHelper(items); break;
                     case "books":
                         items = AddAllBooksHelper(items); break;
-                    case "religious": // Continue working on this feature from here tomorrow.
+                    case "religious":
+                        items = AddReligiousItemsHelper(items); break;
                     case "gems":
+                        items = AddGemItemsHelper(items); break;
                     case "ingredients":
+                        items = AddAllIngredientsHelper(items); break;
                     case "jewelry":
+                        items = AddJewelryItemsHelper(items); break;
                     default:
-                        break;
+                        break; // Continue working on this feature from here tomorrow. Likely will start testing at this point to see if these even work at all, but will see.
                 }
             }
             else if (args.Length == 2)
@@ -523,6 +527,12 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 WomensClothing.Short_shirt_closed, WomensClothing.Short_shirt_closed_belt, WomensClothing.Long_shirt_closed, WomensClothing.Long_shirt_closed_belt
             };
 
+        public static List<ItemGroups> ingredientItemGroups = new List<ItemGroups>() {
+                ItemGroups.Gems, ItemGroups.PlantIngredients1, ItemGroups.PlantIngredients2, ItemGroups.CreatureIngredients1,
+                ItemGroups.CreatureIngredients2, ItemGroups.CreatureIngredients3, ItemGroups.MiscellaneousIngredients1, ItemGroups.MetalIngredients,
+                ItemGroups.MiscellaneousIngredients2
+            };
+
         public static ItemCollection AddAllArmorHelper(ItemCollection items)
         {
             GameObject player = GameManager.Instance.PlayerObject;
@@ -678,9 +688,6 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
         public static ItemCollection AddAllBooksHelper(ItemCollection items) // ItemHelper.bookIDNameMapping is readonly private currently, so just do lazy approach for now.
         {
-            GameObject player = GameManager.Instance.PlayerObject;
-            PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
-            ItemHelper itemHelper = DaggerfallUnity.Instance.ItemHelper;
             DaggerfallUnityItem newItem = null;
 
             for (int i = 0; i < 500; i++)
@@ -691,6 +698,62 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                     continue;
                 else
                     items.AddItem(newItem);
+            }
+            return items;
+        }
+
+        public static ItemCollection AddReligiousItemsHelper(ItemCollection items)
+        {
+            Array enumArray = DaggerfallUnity.Instance.ItemHelper.GetEnumArray(ItemGroups.ReligiousItems);
+            DaggerfallUnityItem newItem = null;
+
+            for (int i = 0; i < enumArray.Length; i++)
+            {
+                newItem = new DaggerfallUnityItem(ItemGroups.ReligiousItems, i);
+                items.AddItem(newItem);
+            }
+            return items;
+        }
+
+        public static ItemCollection AddGemItemsHelper(ItemCollection items)
+        {
+            Array enumArray = DaggerfallUnity.Instance.ItemHelper.GetEnumArray(ItemGroups.Gems);
+            DaggerfallUnityItem newItem = null;
+
+            for (int i = 0; i < enumArray.Length; i++)
+            {
+                newItem = new DaggerfallUnityItem(ItemGroups.Gems, i);
+                items.AddItem(newItem);
+            }
+            return items;
+        }
+
+        public static ItemCollection AddAllIngredientsHelper(ItemCollection items)
+        {
+            DaggerfallUnityItem newItem = null;
+
+            foreach (ItemGroups group in ingredientItemGroups)
+            {
+                Array enumArray = DaggerfallUnity.Instance.ItemHelper.GetEnumArray(group);
+
+                for (int i = 0; i < enumArray.Length; i++)
+                {
+                    newItem = new DaggerfallUnityItem(group, i);
+                    items.AddItem(newItem);
+                }
+            }
+            return items;
+        }
+
+        public static ItemCollection AddJewelryItemsHelper(ItemCollection items)
+        {
+            Array enumArray = DaggerfallUnity.Instance.ItemHelper.GetEnumArray(ItemGroups.Jewellery);
+            DaggerfallUnityItem newItem = null;
+
+            for (int i = 0; i < enumArray.Length; i++)
+            {
+                newItem = new DaggerfallUnityItem(ItemGroups.Jewellery, i);
+                items.AddItem(newItem);
             }
             return items;
         }
