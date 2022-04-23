@@ -729,44 +729,22 @@ namespace UsefulConsoleCommands
         private static class OpenShop
         {
             public static readonly string command = "openshop";
-            public static readonly string description = "Removes everything from your inventory, add additional modifier for more control of what is removed.";
+            public static readonly string description = "Opens a shop interface with items you can freely take or try on, items populated depend on the given modifier words.";
             public static readonly string usage = "openshop [modifier]; try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon'. Without any modifier word, quest items, light sources, horse, wagon, and the spellbook will be preserved.";
 
             public static string Execute(params string[] args)
             {
-                if (args.Length > 1) return "Invalid entry, see usage notes.";
-
                 GameObject player = GameManager.Instance.PlayerObject;
                 PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
                 ItemCollection playerItems = playerEntity.Items;
-                ItemCollection shopItems = null;
                 UCCShopWindow tradeWindow = new UCCShopWindow(DaggerfallUI.UIManager, null, UCCShopWindow.WindowModes.Buy, null);
 
-                //
-                DaggerfallUI.UIManager.PushWindow(tradeWindow);
-                //
-
-                if (player != null && args.Length == 0)
+                if (player != null)
                 {
-                    tradeWindow.MerchantItems = UCCShopWindow.StockMagicShopShelf(shopItems, args);
+                    tradeWindow.MerchantItems = UCCShopWindow.StockMagicShopShelf(args);
+                    DaggerfallUI.UIManager.PushWindow(tradeWindow);
 
-                    return "Removed all items from your inventory excluding quest-items, light sources, horse, wagon, letters of credit, and spellbook.";
-                }
-                else if (player != null && args.Length != 0)
-                {
-                    switch (args[0])
-                    {
-                        case "all":
-                        case "clear":
-                        case "everything":
-                        case "completely":
-                            playerEntity.GoldPieces = 0;
-                            playerEntity.LightSource = null;
-                            playerItems.Clear(); // This command clears literally everything from your inventory.
-                            return "Removed ALL items from your inventory, including gold.";
-                        default:
-                            return "Invalid attribute, try something like: try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon'. Without any modifier word, quest items, light sources, horse, wagon, letters of credit, and the spellbook will be preserved.";
-                    }
+                    return "Opening Magic Shop Shelf.";
                 }
                 else
                     return "Error - Something went wrong.";

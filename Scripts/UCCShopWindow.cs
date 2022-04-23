@@ -299,14 +299,15 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
         #region Helper Methods
 
-        public static ItemCollection StockMagicShopShelf(ItemCollection items, string[] args)
+        public static ItemCollection StockMagicShopShelf(string[] args)
         {
-            items.Clear();
-
             GameObject player = GameManager.Instance.PlayerObject;
             PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
             ItemHelper itemHelper = DaggerfallUnity.Instance.ItemHelper;
             byte[] itemGroups = { 0 };
+
+            ItemCollection items = new ItemCollection();
+            items.Clear();
 
             DFLocation.BuildingTypes buildingType = DFLocation.BuildingTypes.AnyShop;
             int shopQuality = 1;
@@ -341,25 +342,25 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                     case "weaponsmith":
                         buildingType = DFLocation.BuildingTypes.WeaponSmith; break;
                     case "armor":
-                        items = AddAllArmorHelper(items); break;
+                        items = AddAllArmorHelper(items); return items;
                     case "weapons":
-                        items = AddAllWeaponsHelper(items); break;
+                        items = AddAllWeaponsHelper(items); return items;
                     case "artifacts":
-                        items = AddAllArtifactsHelper(items); break;
+                        items = AddAllArtifactsHelper(items); return items;
                     case "clothing":
-                        items = AddAllClothingHelper(items); break;
+                        items = AddAllClothingHelper(items); return items;
                     case "books":
-                        items = AddAllBooksHelper(items); break;
+                        items = AddAllBooksHelper(items); return items;
                     case "religious":
-                        items = AddReligiousItemsHelper(items); break;
+                        items = AddReligiousItemsHelper(items); return items;
                     case "gems":
-                        items = AddGemItemsHelper(items); break;
+                        items = AddGemItemsHelper(items); return items;
                     case "ingredients":
-                        items = AddAllIngredientsHelper(items); break;
+                        items = AddAllIngredientsHelper(items); return items;
                     case "jewelry":
-                        items = AddJewelryItemsHelper(items); break;
+                        items = AddJewelryItemsHelper(items); return items;
                     default:
-                        break; // Continue working on this feature from here tomorrow. Likely will start testing at this point to see if these even work at all, but will see.
+                        break; // Continue working on this feature from here tomorrow. Add more modifier words, etc. Also testing afterward of course.
                 }
             }
             else if (args.Length == 2)
@@ -492,6 +493,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                     }
                 }
             }
+            return items;
         }
 
         public static ArmorMaterialTypes[] armorMaterials = {
@@ -689,10 +691,11 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
         public static ItemCollection AddAllBooksHelper(ItemCollection items) // ItemHelper.bookIDNameMapping is readonly private currently, so just do lazy approach for now.
         {
             DaggerfallUnityItem newItem = null;
+            LoadBookIDNameMapping(); // So this hacky-lazy approach seems to have worked fine so far, not optimal but if it works good enough for now I suppose.
 
-            for (int i = 0; i < 500; i++)
+            for (int i = 0; i < 200; i++)
             {
-                newItem = ItemBuilder.CreateBook(i);
+                newItem = CreateBook(i);
 
                 if (newItem == null)
                     continue;
@@ -700,6 +703,62 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                     items.AddItem(newItem);
             }
             return items;
+        }
+
+        public static DaggerfallUnityItem CreateBook(int id)
+        {
+            var bookFile = new BookFile();
+
+            string name = GetBookFileName(id);
+
+            if (name == null)
+                return null;
+
+            if (!DaggerfallWorkshop.Utility.AssetInjection.BookReplacement.TryImportBook(name, bookFile) &&
+                !bookFile.OpenBook(DaggerfallUnity.Instance.Arena2Path, name))
+                return null;
+
+            return new DaggerfallUnityItem(ItemGroups.Books, 0)
+            {
+                message = id,
+                value = bookFile.Price
+            };
+        }
+
+        readonly static Dictionary<int, String> bookIDNameMapping = new Dictionary<int, String>();
+
+        public static string GetBookFileName(int id)
+        {
+            // Get name for custom book
+            DaggerfallWorkshop.Utility.AssetInjection.BookMappingEntry entry;
+            if (DaggerfallWorkshop.Utility.AssetInjection.BookReplacement.BookMappingEntries.TryGetValue(id, out entry))
+                return entry.Name;
+
+            // Check if classic book and make name from id
+            if (bookIDNameMapping.ContainsKey(id))
+                return BookFile.messageToBookFilename(id);
+
+            return null;
+        }
+
+        static void LoadBookIDNameMapping()
+        {
+            try
+            {
+                TextAsset bookNames = Resources.Load<TextAsset>("books");
+                List<BookMappingTemplate> mappings = Serialization.SaveLoadManager.Deserialize(typeof(List<BookMappingTemplate>), bookNames.text) as List<BookMappingTemplate>;
+                foreach (BookMappingTemplate entry in mappings)
+                {
+                    bookIDNameMapping.Add(entry.id, entry.title);
+                }
+            }
+            catch
+            {
+                Debug.Log("Could not load the BookIDName mapping from Resources. Check file exists and is in correct format.");
+            }
+
+            if (DaggerfallUnity.Settings.AssetInjection)
+                DaggerfallWorkshop.Utility.AssetInjection.BookReplacement.FindAdditionalBooks(bookIDNameMapping);
         }
 
         public static ItemCollection AddReligiousItemsHelper(ItemCollection items)
