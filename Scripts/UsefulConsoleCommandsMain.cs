@@ -118,7 +118,9 @@ namespace UsefulConsoleCommands
                 ConsoleCommandsDatabase.RegisterCommand(CreateInfiniteTorch.command, CreateInfiniteTorch.description, CreateInfiniteTorch.usage, CreateInfiniteTorch.Execute); // tested
                 ConsoleCommandsDatabase.RegisterCommand(CleanupCorpses.command, CleanupCorpses.description, CleanupCorpses.usage, CleanupCorpses.Execute); // tested
                 ConsoleCommandsDatabase.RegisterCommand(LetMeSleep.command, LetMeSleep.description, LetMeSleep.usage, LetMeSleep.Execute); // tested
-                ConsoleCommandsDatabase.RegisterCommand(OpenShop.command, OpenShop.description, OpenShop.usage, OpenShop.Execute);
+                ConsoleCommandsDatabase.RegisterCommand(OpenShop.command, OpenShop.description, OpenShop.usage, OpenShop.Execute); // tested
+                ConsoleCommandsDatabase.RegisterCommand(ChangeGender.command, ChangeGender.description, ChangeGender.usage, ChangeGender.Execute);
+                ConsoleCommandsDatabase.RegisterCommand(ChangeRace.command, ChangeRace.description, ChangeRace.usage, ChangeRace.Execute);
                 ConsoleCommandsDatabase.RegisterCommand(ListRegions.command, ListRegions.description, ListRegions.usage, ListRegions.Execute);
             }
             catch (Exception e)
@@ -726,11 +728,79 @@ namespace UsefulConsoleCommands
             }
         }
 
-        private static class OpenShop // Just need to do testing, add more word variants for modifier words, and give better details in the usage notes and help command for this OpenShop command.
+        private static class OpenShop
         {
             public static readonly string command = "openshop";
             public static readonly string description = "Opens a shop interface with items you can freely take or try on, items populated depend on the given modifier words.";
-            public static readonly string usage = "openshop [modifier]; try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon'. Without any modifier word, quest items, light sources, horse, wagon, and the spellbook will be preserved.";
+            public static readonly string usage = "openshop [modifier] [modifier2] [gender] [race]; try something like: 'openshop' will open a random shop shelf from a random shop type with a random quality. 'openshop alchemist' will open an alchemist shop shelf with a random quality. 'openshop pawnshop 15' will open a pawnshop shelf with a quality of 15. 'openshop artifacts' will open a shelf with all the artifacts in the game. 'openshop ingredients 8' will open a shelf with all ingredients 8 of each. 'openshop armor mithril female highelf' will open a shelf with all armor made of mithril with the body morphology for female elves. 'openshop clothing purple' will open a shelf with all clothing for your character's gender and race in the color purple. Try many different combinations, there are many specifications you can give to filter down your options in different ways.";
+
+            public static string Execute(params string[] args)
+            {
+                GameObject player = GameManager.Instance.PlayerObject;
+                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
+                ItemCollection playerItems = playerEntity.Items;
+                UCCShopWindow tradeWindow = new UCCShopWindow(DaggerfallUI.UIManager, null, UCCShopWindow.WindowModes.Buy, null);
+
+                if (args.Length >= 5)
+                    return "Error - Too many arguments, check the usage notes.";
+
+                if (player != null)
+                {
+                    tradeWindow.MerchantItems = UCCShopWindow.StockMagicShopShelf(args);
+
+                    if (tradeWindow.MerchantItems == null || tradeWindow.MerchantItems.Count < 1)
+                    {
+                        return "Error - No items were found, check the usage notes.";
+                    }
+
+                    DaggerfallUI.UIManager.PushWindow(tradeWindow);
+
+                    return "Opening Magic Shop Shelf.";
+                }
+                else
+                    return "Error - Something went wrong.";
+            }
+        }
+
+        private static class ChangeGender
+        {
+            public static readonly string command = "changegender";
+            public static readonly string description = "Opens a shop interface with items you can freely take or try on, items populated depend on the given modifier words.";
+            public static readonly string usage = "openshop [modifier]; try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon'. Without any modifier word, quest items, light sources, horse, wagon, and the spellbook will be preservedtttttttttttttttttttttttttttttttttttttttttttttttttttttttt sdfsdf wieiew0 sdf88934 sdfddfsdf sddd.";
+
+            public static string Execute(params string[] args)
+            {
+                GameObject player = GameManager.Instance.PlayerObject;
+                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
+                ItemCollection playerItems = playerEntity.Items;
+                UCCShopWindow tradeWindow = new UCCShopWindow(DaggerfallUI.UIManager, null, UCCShopWindow.WindowModes.Buy, null);
+
+                if (args.Length >= 5)
+                    return "Error - Too many arguments, check the usage notes.";
+
+                if (player != null)
+                {
+                    tradeWindow.MerchantItems = UCCShopWindow.StockMagicShopShelf(args);
+
+                    if (tradeWindow.MerchantItems == null || tradeWindow.MerchantItems.Count < 1)
+                    {
+                        return "Error - No items were found, check the usage notes.";
+                    }
+
+                    DaggerfallUI.UIManager.PushWindow(tradeWindow);
+
+                    return "Opening Magic Shop Shelf.";
+                }
+                else
+                    return "Error - Something went wrong.";
+            }
+        }
+
+        private static class ChangeRace
+        {
+            public static readonly string command = "changerace";
+            public static readonly string description = "Opens a shop interface with items you can freely take or try on, items populated depend on the given modifier words.";
+            public static readonly string usage = "openshop [modifier]; try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon'. Without any modifier word, quest items, light sources, horse, wagon, and the spellbook will be preservedtttttttttttttttttttttttttttttttttttttttttttttttttttttttt sdfsdf wieiew0 sdf88934 sdfddfsdf sddd.";
 
             public static string Execute(params string[] args)
             {

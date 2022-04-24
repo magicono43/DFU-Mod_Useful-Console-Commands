@@ -299,7 +299,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
         #region Helper Methods
 
-        public static ItemCollection StockMagicShopShelf(string[] args) // Think I just need to add more variants of words for the modifier words and this command should basically be done for now.
+        public static ItemCollection StockMagicShopShelf(string[] args)
         {
             GameObject player = GameManager.Instance.PlayerObject;
             PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
@@ -324,20 +324,28 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 switch (args[0])
                 {
                     case "alchemist":
+                    case "alch":
                         buildingType = DFLocation.BuildingTypes.Alchemist; break;
                     case "armorer":
+                    case "armorsmith":
                         buildingType = DFLocation.BuildingTypes.Armorer; break;
                     case "bookseller":
+                    case "bookshop":
                         buildingType = DFLocation.BuildingTypes.Bookseller; break;
                     case "clothingstore":
+                    case "clothier":
+                    case "tailor":
                         buildingType = DFLocation.BuildingTypes.ClothingStore; break;
                     case "furniturestore":
                         buildingType = DFLocation.BuildingTypes.FurnitureStore; break;
                     case "gemstore":
+                    case "jeweler":
                         buildingType = DFLocation.BuildingTypes.GemStore; break;
                     case "generalstore":
+                    case "general":
                         buildingType = DFLocation.BuildingTypes.GeneralStore; break;
                     case "pawnshop":
+                    case "pawn":
                         buildingType = DFLocation.BuildingTypes.PawnShop; break;
                     case "weaponsmith":
                         buildingType = DFLocation.BuildingTypes.WeaponSmith; break;
@@ -368,20 +376,28 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 switch (args[0])
                 {
                     case "alchemist":
+                    case "alch":
                         buildingType = DFLocation.BuildingTypes.Alchemist; break;
                     case "armorer":
+                    case "armorsmith":
                         buildingType = DFLocation.BuildingTypes.Armorer; break;
                     case "bookseller":
+                    case "bookshop":
                         buildingType = DFLocation.BuildingTypes.Bookseller; break;
                     case "clothingstore":
+                    case "clothier":
+                    case "tailor":
                         buildingType = DFLocation.BuildingTypes.ClothingStore; break;
                     case "furniturestore":
                         buildingType = DFLocation.BuildingTypes.FurnitureStore; break;
                     case "gemstore":
+                    case "jeweler":
                         buildingType = DFLocation.BuildingTypes.GemStore; break;
                     case "generalstore":
+                    case "general":
                         buildingType = DFLocation.BuildingTypes.GeneralStore; break;
                     case "pawnshop":
+                    case "pawn":
                         buildingType = DFLocation.BuildingTypes.PawnShop; break;
                     case "weaponsmith":
                         buildingType = DFLocation.BuildingTypes.WeaponSmith; break;
@@ -688,6 +704,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 case "leather":
                     return ArmorMaterialTypes.Leather;
                 case "chain":
+                case "chainmail":
                     return ArmorMaterialTypes.Chain; // Completely forget what "Chain2" is for, but screw it.
                 case "iron":
                     return ArmorMaterialTypes.Iron;
@@ -698,16 +715,21 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 case "elven":
                     return ArmorMaterialTypes.Elven;
                 case "dwarven":
+                case "dwarf":
                     return ArmorMaterialTypes.Dwarven;
                 case "mithril":
+                case "mith":
                     return ArmorMaterialTypes.Mithril;
                 case "adamantium":
+                case "adam":
                     return ArmorMaterialTypes.Adamantium;
                 case "ebony":
                     return ArmorMaterialTypes.Ebony;
                 case "orcish":
+                case "orc":
                     return ArmorMaterialTypes.Orcish;
                 case "daedric":
+                case "dae":
                     return ArmorMaterialTypes.Daedric;
                 default:
                     return ArmorMaterialTypes.None;
@@ -756,16 +778,21 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 case "elven":
                     return WeaponMaterialTypes.Elven;
                 case "dwarven":
+                case "dwarf":
                     return WeaponMaterialTypes.Dwarven;
                 case "mithril":
+                case "mith":
                     return WeaponMaterialTypes.Mithril;
                 case "adamantium":
+                case "adam":
                     return WeaponMaterialTypes.Adamantium;
                 case "ebony":
                     return WeaponMaterialTypes.Ebony;
                 case "orcish":
+                case "orc":
                     return WeaponMaterialTypes.Orcish;
                 case "daedric":
+                case "dae":
                     return WeaponMaterialTypes.Daedric;
                 default:
                     return WeaponMaterialTypes.None;
@@ -830,24 +857,40 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             switch (arg)
             {
                 case "blue":
+                case "b":
                     return DyeColors.Blue;
                 case "grey":
+                case "gray":
                     return DyeColors.Grey;
                 case "red":
+                case "r":
                     return DyeColors.Red;
                 case "darkbrown":
+                case "db":
                     return DyeColors.DarkBrown;
                 case "purple":
+                case "purp":
+                case "p":
                     return DyeColors.Purple;
                 case "lightbrown":
+                case "brown":
+                case "lb":
                     return DyeColors.LightBrown;
                 case "white":
+                case "w":
                     return DyeColors.White;
                 case "aquamarine":
+                case "teal":
+                case "aqua":
+                case "a":
                     return DyeColors.Aquamarine;
                 case "yellow":
+                case "yell":
+                case "y":
                     return DyeColors.Yellow;
                 case "green":
+                case "gre":
+                case "g":
                     return DyeColors.Green;
                 default:
                     return DyeColors.Unchanged;
@@ -859,8 +902,12 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             switch (arg)
             {
                 case "male":
+                case "man":
+                case "m":
                     return Genders.Male;
                 case "female":
+                case "woman":
+                case "w":
                     return Genders.Female;
                 default:
                     return GameManager.Instance.PlayerEntity.Gender;
@@ -872,20 +919,43 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             switch (arg)
             {
                 case "breton":
+                case "bret":
+                case "manmeri":
                     return Races.Breton;
                 case "redguard":
+                case "red-guard":
+                case "rg":
+                case "yokudans":
                     return Races.Redguard;
                 case "nord":
                     return Races.Nord;
                 case "darkelf":
+                case "dark-elf":
+                case "de":
+                case "dunmer":
                     return Races.DarkElf;
                 case "highelf":
+                case "high-elf":
+                case "he":
+                case "altmer":
                     return Races.HighElf;
                 case "woodelf":
+                case "wood-elf":
+                case "we":
+                case "bosmer":
                     return Races.WoodElf;
                 case "khajiit":
+                case "kha":
+                case "cat":
+                case "cats":
                     return Races.Khajiit;
                 case "argonian":
+                case "saxhleel":
+                case "arg":
+                case "lizard":
+                case "lizards":
+                case "reptilian":
+                case "reptile":
                     return Races.Argonian;
                 default:
                     return GameManager.Instance.PlayerEntity.Race;
@@ -1006,10 +1076,9 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
                 for (int i = 0; i < enumArray.Length; i++)
                 {
-                    newItem = new DaggerfallUnityItem(group, i);
-
                     for (int v = 0; v < n; v++)
                     {
+                        newItem = new DaggerfallUnityItem(group, i);
                         items.AddItem(newItem);
                     }
                 }
