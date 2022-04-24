@@ -904,10 +904,13 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 case "male":
                 case "man":
                 case "m":
+                case "0":
                     return Genders.Male;
                 case "female":
                 case "woman":
+                case "f":
                 case "w":
+                case "1":
                     return Genders.Female;
                 default:
                     return GameManager.Instance.PlayerEntity.Gender;

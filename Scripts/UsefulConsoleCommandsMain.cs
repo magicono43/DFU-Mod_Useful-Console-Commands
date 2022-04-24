@@ -119,8 +119,9 @@ namespace UsefulConsoleCommands
                 ConsoleCommandsDatabase.RegisterCommand(CleanupCorpses.command, CleanupCorpses.description, CleanupCorpses.usage, CleanupCorpses.Execute); // tested
                 ConsoleCommandsDatabase.RegisterCommand(LetMeSleep.command, LetMeSleep.description, LetMeSleep.usage, LetMeSleep.Execute); // tested
                 ConsoleCommandsDatabase.RegisterCommand(OpenShop.command, OpenShop.description, OpenShop.usage, OpenShop.Execute); // tested
-                ConsoleCommandsDatabase.RegisterCommand(ChangeGender.command, ChangeGender.description, ChangeGender.usage, ChangeGender.Execute);
-                ConsoleCommandsDatabase.RegisterCommand(ChangeRace.command, ChangeRace.description, ChangeRace.usage, ChangeRace.Execute);
+                ConsoleCommandsDatabase.RegisterCommand(ChangeGender.command, ChangeGender.description, ChangeGender.usage, ChangeGender.Execute); // tested
+                ConsoleCommandsDatabase.RegisterCommand(ChangeRace.command, ChangeRace.description, ChangeRace.usage, ChangeRace.Execute); // tested
+                ConsoleCommandsDatabase.RegisterCommand(ChangeFace.command, ChangeFace.description, ChangeFace.usage, ChangeFace.Execute); // tested
                 ConsoleCommandsDatabase.RegisterCommand(ListRegions.command, ListRegions.description, ListRegions.usage, ListRegions.Execute);
             }
             catch (Exception e)
@@ -765,31 +766,43 @@ namespace UsefulConsoleCommands
         private static class ChangeGender
         {
             public static readonly string command = "changegender";
-            public static readonly string description = "Opens a shop interface with items you can freely take or try on, items populated depend on the given modifier words.";
-            public static readonly string usage = "openshop [modifier]; try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon'. Without any modifier word, quest items, light sources, horse, wagon, and the spellbook will be preservedtttttttttttttttttttttttttttttttttttttttttttttttttttttttt sdfsdf wieiew0 sdf88934 sdfddfsdf sddd.";
+            public static readonly string description = "Changes your character's current gender to either male or female.";
+            public static readonly string usage = "changegender [male/female]; try something like: 'changegender man' or 'changegender women' even 'changegender m' are valid.";
 
             public static string Execute(params string[] args)
             {
                 GameObject player = GameManager.Instance.PlayerObject;
                 PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
-                ItemCollection playerItems = playerEntity.Items;
-                UCCShopWindow tradeWindow = new UCCShopWindow(DaggerfallUI.UIManager, null, UCCShopWindow.WindowModes.Buy, null);
 
-                if (args.Length >= 5)
+                if (args.Length <= 0)
+                    return "Error - An argument is required, check the usage notes.";
+                if (args.Length > 1)
                     return "Error - Too many arguments, check the usage notes.";
 
                 if (player != null)
                 {
-                    tradeWindow.MerchantItems = UCCShopWindow.StockMagicShopShelf(args);
-
-                    if (tradeWindow.MerchantItems == null || tradeWindow.MerchantItems.Count < 1)
+                    switch (args[0])
                     {
-                        return "Error - No items were found, check the usage notes.";
+                        case "male":
+                        case "man":
+                        case "m":
+                        case "0":
+                            if (playerEntity.Gender == Genders.Male)
+                                return "You are already a male.";
+                            playerEntity.Gender = Genders.Male;
+                            return "You are now a male.";
+                        case "female":
+                        case "woman":
+                        case "f":
+                        case "w":
+                        case "1":
+                            if (playerEntity.Gender == Genders.Female)
+                                return "You are already a female.";
+                            playerEntity.Gender = Genders.Female;
+                            return "You are now a female.";
+                        default:
+                            return "Error - You need to enter a gender, check usage notes.";
                     }
-
-                    DaggerfallUI.UIManager.PushWindow(tradeWindow);
-
-                    return "Opening Magic Shop Shelf.";
                 }
                 else
                     return "Error - Something went wrong.";
@@ -799,31 +812,202 @@ namespace UsefulConsoleCommands
         private static class ChangeRace
         {
             public static readonly string command = "changerace";
-            public static readonly string description = "Opens a shop interface with items you can freely take or try on, items populated depend on the given modifier words.";
-            public static readonly string usage = "openshop [modifier]; try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon'. Without any modifier word, quest items, light sources, horse, wagon, and the spellbook will be preservedtttttttttttttttttttttttttttttttttttttttttttttttttttttttt sdfsdf wieiew0 sdf88934 sdfddfsdf sddd.";
+            public static readonly string description = "Changes your character's current race. It highly advised to not use this as a permanent change, and is more intended for testing, some traits might get messed up potentially when changing between races, so just be advised.";
+            public static readonly string usage = "changerace [race]; try something like: 'changerace redguard' or 'changerace woodelf' or 'changerace dunmer' or even somewhat related descriptors like 'changerace cat' or 'changerace lizard' many are valid entries.";
 
             public static string Execute(params string[] args)
             {
                 GameObject player = GameManager.Instance.PlayerObject;
                 PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
-                ItemCollection playerItems = playerEntity.Items;
-                UCCShopWindow tradeWindow = new UCCShopWindow(DaggerfallUI.UIManager, null, UCCShopWindow.WindowModes.Buy, null);
 
-                if (args.Length >= 5)
+                if (args.Length <= 0)
+                    return "Error - An argument is required, check the usage notes.";
+                if (args.Length > 1)
                     return "Error - Too many arguments, check the usage notes.";
 
                 if (player != null)
                 {
-                    tradeWindow.MerchantItems = UCCShopWindow.StockMagicShopShelf(args);
-
-                    if (tradeWindow.MerchantItems == null || tradeWindow.MerchantItems.Count < 1)
+                    switch (args[0])
                     {
-                        return "Error - No items were found, check the usage notes.";
+                        case "breton":
+                        case "bret":
+                        case "manmeri":
+                            if (playerEntity.Race == Races.Breton)
+                                return "You are already a Breton.";
+                            playerEntity.BirthRaceTemplate.ID = (int)Races.Breton;
+                            playerEntity.BirthRaceTemplate.Name = TextManager.Instance.GetLocalizedText("breton");
+                            playerEntity.BirthRaceTemplate.DescriptionID = 2003;
+                            playerEntity.BirthRaceTemplate.ClipID = 209;
+                            playerEntity.BirthRaceTemplate.PaperDollBackground = "SCBG00I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyMaleUnclothed = "BODY00I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyMaleClothed = "BODY00I1.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyFemaleUnclothed = "BODY10I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyFemaleClothed = "BODY10I1.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollHeadsMale = "FACE00I0.CIF";
+                            playerEntity.BirthRaceTemplate.PaperDollHeadsFemale = "FACE10I0.CIF";
+                            return "You are now a Breton.";
+                        case "redguard":
+                        case "red-guard":
+                        case "rg":
+                        case "yokudans":
+                            if (playerEntity.Race == Races.Redguard)
+                                return "You are already a Redguard.";
+                            playerEntity.BirthRaceTemplate.ID = (int)Races.Redguard;
+                            playerEntity.BirthRaceTemplate.Name = TextManager.Instance.GetLocalizedText("redguard");
+                            playerEntity.BirthRaceTemplate.DescriptionID = 2002;
+                            playerEntity.BirthRaceTemplate.ClipID = 210;
+                            playerEntity.BirthRaceTemplate.PaperDollBackground = "SCBG01I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyMaleUnclothed = "BODY01I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyMaleClothed = "BODY01I1.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyFemaleUnclothed = "BODY11I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyFemaleClothed = "BODY11I1.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollHeadsMale = "FACE01I0.CIF";
+                            playerEntity.BirthRaceTemplate.PaperDollHeadsFemale = "FACE11I0.CIF";
+                            return "You are now a Redguard.";
+                        case "nord":
+                            if (playerEntity.Race == Races.Nord)
+                                return "You are already a Nord.";
+                            playerEntity.BirthRaceTemplate.ID = (int)Races.Nord;
+                            playerEntity.BirthRaceTemplate.Name = TextManager.Instance.GetLocalizedText("nord");
+                            playerEntity.BirthRaceTemplate.DescriptionID = 2000;
+                            playerEntity.BirthRaceTemplate.ClipID = 211;
+                            playerEntity.BirthRaceTemplate.PaperDollBackground = "SCBG02I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyMaleUnclothed = "BODY02I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyMaleClothed = "BODY02I1.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyFemaleUnclothed = "BODY12I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyFemaleClothed = "BODY12I1.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollHeadsMale = "FACE02I0.CIF";
+                            playerEntity.BirthRaceTemplate.PaperDollHeadsFemale = "FACE12I0.CIF";
+                            return "You are now a Nord.";
+                        case "darkelf":
+                        case "dark-elf":
+                        case "de":
+                        case "dunmer":
+                            if (playerEntity.Race == Races.DarkElf)
+                                return "You are already a Dark Elf.";
+                            playerEntity.BirthRaceTemplate.ID = (int)Races.DarkElf;
+                            playerEntity.BirthRaceTemplate.Name = TextManager.Instance.GetLocalizedText("darkElf");
+                            playerEntity.BirthRaceTemplate.DescriptionID = 2007;
+                            playerEntity.BirthRaceTemplate.ClipID = 212;
+                            playerEntity.BirthRaceTemplate.PaperDollBackground = "SCBG03I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyMaleUnclothed = "BODY03I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyMaleClothed = "BODY03I1.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyFemaleUnclothed = "BODY13I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyFemaleClothed = "BODY13I1.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollHeadsMale = "FACE03I0.CIF";
+                            playerEntity.BirthRaceTemplate.PaperDollHeadsFemale = "FACE13I0.CIF";
+                            return "You are now a Dark Elf.";
+                        case "highelf":
+                        case "high-elf":
+                        case "he":
+                        case "altmer":
+                            if (playerEntity.Race == Races.HighElf)
+                                return "You are already a High Elf.";
+                            playerEntity.BirthRaceTemplate.ID = (int)Races.HighElf;
+                            playerEntity.BirthRaceTemplate.Name = TextManager.Instance.GetLocalizedText("highElf");
+                            playerEntity.BirthRaceTemplate.DescriptionID = 2006;
+                            playerEntity.BirthRaceTemplate.ClipID = 213;
+                            playerEntity.BirthRaceTemplate.PaperDollBackground = "SCBG04I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyMaleUnclothed = "BODY04I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyMaleClothed = "BODY04I1.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyFemaleUnclothed = "BODY14I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyFemaleClothed = "BODY14I1.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollHeadsMale = "FACE04I0.CIF";
+                            playerEntity.BirthRaceTemplate.PaperDollHeadsFemale = "FACE14I0.CIF";
+                            return "You are now a High Elf.";
+                        case "woodelf":
+                        case "wood-elf":
+                        case "we":
+                        case "bosmer":
+                            if (playerEntity.Race == Races.WoodElf)
+                                return "You are already a Wood Elf.";
+                            playerEntity.BirthRaceTemplate.ID = (int)Races.WoodElf;
+                            playerEntity.BirthRaceTemplate.Name = TextManager.Instance.GetLocalizedText("woodElf");
+                            playerEntity.BirthRaceTemplate.DescriptionID = 2005;
+                            playerEntity.BirthRaceTemplate.ClipID = 214;
+                            playerEntity.BirthRaceTemplate.PaperDollBackground = "SCBG05I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyMaleUnclothed = "BODY05I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyMaleClothed = "BODY05I1.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyFemaleUnclothed = "BODY15I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyFemaleClothed = "BODY15I1.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollHeadsMale = "FACE05I0.CIF";
+                            playerEntity.BirthRaceTemplate.PaperDollHeadsFemale = "FACE15I0.CIF";
+                            return "You are now a Wood Elf.";
+                        case "khajiit":
+                        case "kha":
+                        case "cat":
+                        case "cats":
+                            if (playerEntity.Race == Races.Khajiit)
+                                return "You are already a Khajiit.";
+                            playerEntity.BirthRaceTemplate.ID = (int)Races.Khajiit;
+                            playerEntity.BirthRaceTemplate.Name = TextManager.Instance.GetLocalizedText("khajiit");
+                            playerEntity.BirthRaceTemplate.DescriptionID = 2001;
+                            playerEntity.BirthRaceTemplate.ClipID = 215;
+                            playerEntity.BirthRaceTemplate.PaperDollBackground = "SCBG06I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyMaleUnclothed = "BODY06I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyMaleClothed = "BODY06I1.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyFemaleUnclothed = "BODY16I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyFemaleClothed = "BODY16I1.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollHeadsMale = "FACE06I0.CIF";
+                            playerEntity.BirthRaceTemplate.PaperDollHeadsFemale = "FACE16I0.CIF";
+                            return "You are now a Khajiit.";
+                        case "argonian":
+                        case "saxhleel":
+                        case "arg":
+                        case "lizard":
+                        case "lizards":
+                        case "reptilian":
+                        case "reptile":
+                            if (playerEntity.Race == Races.Argonian)
+                                return "You are already a Argonian.";
+                            playerEntity.BirthRaceTemplate.ID = (int)Races.Argonian;
+                            playerEntity.BirthRaceTemplate.Name = TextManager.Instance.GetLocalizedText("argonian");
+                            playerEntity.BirthRaceTemplate.DescriptionID = 2004;
+                            playerEntity.BirthRaceTemplate.ClipID = 216;
+                            playerEntity.BirthRaceTemplate.PaperDollBackground = "SCBG07I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyMaleUnclothed = "BODY07I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyMaleClothed = "BODY07I1.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyFemaleUnclothed = "BODY17I0.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollBodyFemaleClothed = "BODY17I1.IMG";
+                            playerEntity.BirthRaceTemplate.PaperDollHeadsMale = "FACE07I0.CIF";
+                            playerEntity.BirthRaceTemplate.PaperDollHeadsFemale = "FACE17I0.CIF";
+                            return "You are now a Argonian.";
+                        default:
+                            return "Error - You need to enter a valid race, check usage notes.";
                     }
+                }
+                else
+                    return "Error - Something went wrong.";
+            }
+        }
 
-                    DaggerfallUI.UIManager.PushWindow(tradeWindow);
+        private static class ChangeFace
+        {
+            public static readonly string command = "changeface";
+            public static readonly string description = "Changes your character's current face index, for whatever race and gender you currently are.";
+            public static readonly string usage = "changeface [n]; try something like: 'changeface 5' or 'changeface 9' between 0 and 9 are all valid face index values.";
 
-                    return "Opening Magic Shop Shelf.";
+            public static string Execute(params string[] args)
+            {
+                GameObject player = GameManager.Instance.PlayerObject;
+                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
+
+                if (args.Length <= 0)
+                    return "Error - An argument is required, check the usage notes.";
+                if (args.Length > 1)
+                    return "Error - Too many arguments, check the usage notes.";
+
+                if (!int.TryParse(args[0], out int n))
+                    return string.Format("`{0}` is not a number, please use a number for [n].", args[0]);
+                if (n < 0 || n > 9)
+                    return "Invalid amount, [n] must be a value between 0 and 9.";
+
+                if (player != null)
+                {
+                    if (playerEntity.FaceIndex == n)
+                        return "You are already using that face index.";
+                    playerEntity.FaceIndex = n;
+                    return "You now have a new face.";
                 }
                 else
                     return "Error - Something went wrong.";
