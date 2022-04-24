@@ -726,7 +726,7 @@ namespace UsefulConsoleCommands
             }
         }
 
-        private static class OpenShop
+        private static class OpenShop // Just need to do testing, add more word variants for modifier words, and give better details in the usage notes and help command for this OpenShop command.
         {
             public static readonly string command = "openshop";
             public static readonly string description = "Opens a shop interface with items you can freely take or try on, items populated depend on the given modifier words.";
@@ -739,9 +739,18 @@ namespace UsefulConsoleCommands
                 ItemCollection playerItems = playerEntity.Items;
                 UCCShopWindow tradeWindow = new UCCShopWindow(DaggerfallUI.UIManager, null, UCCShopWindow.WindowModes.Buy, null);
 
+                if (args.Length >= 5)
+                    return "Error - Too many arguments, check the usage notes.";
+
                 if (player != null)
                 {
                     tradeWindow.MerchantItems = UCCShopWindow.StockMagicShopShelf(args);
+
+                    if (tradeWindow.MerchantItems == null || tradeWindow.MerchantItems.Count < 1)
+                    {
+                        return "Error - No items were found, check the usage notes.";
+                    }
+
                     DaggerfallUI.UIManager.PushWindow(tradeWindow);
 
                     return "Opening Magic Shop Shelf.";

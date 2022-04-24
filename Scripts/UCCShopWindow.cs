@@ -299,7 +299,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
         #region Helper Methods
 
-        public static ItemCollection StockMagicShopShelf(string[] args)
+        public static ItemCollection StockMagicShopShelf(string[] args) // Think I just need to add more variants of words for the modifier words and this command should basically be done for now.
         {
             GameObject player = GameManager.Instance.PlayerObject;
             PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
@@ -360,13 +360,73 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                     case "jewelry":
                         items = AddJewelryItemsHelper(items); return items;
                     default:
-                        break; // Continue working on this feature from here tomorrow. Add more modifier words, etc. Also testing afterward of course.
+                        return null;
                 }
             }
             else if (args.Length == 2)
             {
-                shopQuality = UnityEngine.Random.Range(1, 21);
-                buildingType = (DFLocation.BuildingTypes)PickOneOf(0, 2, 5, 6, 7, 8, 9, 12, 13);
+                switch (args[0])
+                {
+                    case "alchemist":
+                        buildingType = DFLocation.BuildingTypes.Alchemist; break;
+                    case "armorer":
+                        buildingType = DFLocation.BuildingTypes.Armorer; break;
+                    case "bookseller":
+                        buildingType = DFLocation.BuildingTypes.Bookseller; break;
+                    case "clothingstore":
+                        buildingType = DFLocation.BuildingTypes.ClothingStore; break;
+                    case "furniturestore":
+                        buildingType = DFLocation.BuildingTypes.FurnitureStore; break;
+                    case "gemstore":
+                        buildingType = DFLocation.BuildingTypes.GemStore; break;
+                    case "generalstore":
+                        buildingType = DFLocation.BuildingTypes.GeneralStore; break;
+                    case "pawnshop":
+                        buildingType = DFLocation.BuildingTypes.PawnShop; break;
+                    case "weaponsmith":
+                        buildingType = DFLocation.BuildingTypes.WeaponSmith; break;
+                    case "armor":
+                        items = AddAllArmorHelper(items, true, args[1]); return items;
+                    case "weapons":
+                        items = AddAllWeaponsHelper(items, true, args[1]); return items;
+                    case "clothing":
+                        items = AddAllClothingHelper(items, true, args[1]); return items;
+                    case "ingredients":
+                        items = AddAllIngredientsHelper(items, args[1]); return items;
+                    default:
+                        return null;
+                }
+
+                if (!int.TryParse(args[1], out int n))
+                    return null;
+                if (n < 1 || n > 20) // Quality range limits for vanilla buildings.
+                    return null;
+
+                shopQuality = n;
+            }
+            else if (args.Length == 3)
+            {
+                switch (args[0])
+                {
+                    case "armor":
+                        items = AddAllArmorHelper(items, true, args[1], args[2]); return items;
+                    case "clothing":
+                        items = AddAllClothingHelper(items, true, args[1], args[2]); return items;
+                    default:
+                        return null;
+                }
+            }
+            else if (args.Length == 4)
+            {
+                switch (args[0])
+                {
+                    case "armor":
+                        items = AddAllArmorHelper(items, true, args[1], args[2], args[3]); return items;
+                    case "clothing":
+                        items = AddAllClothingHelper(items, true, args[1], args[2], args[3]); return items;
+                    default:
+                        return null;
+                }
             }
 
             switch (buildingType)
@@ -535,7 +595,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 ItemGroups.MiscellaneousIngredients2
             };
 
-        public static ItemCollection AddAllArmorHelper(ItemCollection items)
+        public static ItemCollection AddAllArmorHelper(ItemCollection items, bool modifier = false, string argMat = "", string argGend = "", string argRace = "")
         {
             GameObject player = GameManager.Instance.PlayerObject;
             PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
@@ -544,6 +604,12 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
             foreach (ArmorMaterialTypes material in armorMaterials)
             {
+                if (modifier && material != GetArmorMatTypeByString(argMat))
+                    continue;
+
+                Genders gend = GetGenderByString(argGend);
+                Races race = GetRaceByString(argRace);
+
                 Array enumArray = itemHelper.GetEnumArray(ItemGroups.Armor);
                 for (int i = 0; i < enumArray.Length; i++)
                 {
@@ -600,7 +666,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
                     for (int v = vs; v < vf; v++)
                     {
-                        newItem = ItemBuilder.CreateArmor(playerEntity.Gender, playerEntity.Race, armorType, material, v);
+                        newItem = ItemBuilder.CreateArmor(gend, race, armorType, material, v);
                         items.AddItem(newItem);
                     }
                 }
@@ -608,14 +674,47 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 for (int i = 0; i < customItemTemplates.Length; i++)
                 {
                     newItem = ItemBuilder.CreateItem(ItemGroups.Armor, customItemTemplates[i]);
-                    ItemBuilder.ApplyArmorSettings(newItem, playerEntity.Gender, playerEntity.Race, material);
+                    ItemBuilder.ApplyArmorSettings(newItem, gend, race, material);
                     items.AddItem(newItem);
                 }
             }
             return items;
         }
 
-        public static ItemCollection AddAllWeaponsHelper(ItemCollection items)
+        public static ArmorMaterialTypes GetArmorMatTypeByString(string arg)
+        {
+            switch (arg)
+            {
+                case "leather":
+                    return ArmorMaterialTypes.Leather;
+                case "chain":
+                    return ArmorMaterialTypes.Chain; // Completely forget what "Chain2" is for, but screw it.
+                case "iron":
+                    return ArmorMaterialTypes.Iron;
+                case "steel":
+                    return ArmorMaterialTypes.Steel;
+                case "silver":
+                    return ArmorMaterialTypes.Silver;
+                case "elven":
+                    return ArmorMaterialTypes.Elven;
+                case "dwarven":
+                    return ArmorMaterialTypes.Dwarven;
+                case "mithril":
+                    return ArmorMaterialTypes.Mithril;
+                case "adamantium":
+                    return ArmorMaterialTypes.Adamantium;
+                case "ebony":
+                    return ArmorMaterialTypes.Ebony;
+                case "orcish":
+                    return ArmorMaterialTypes.Orcish;
+                case "daedric":
+                    return ArmorMaterialTypes.Daedric;
+                default:
+                    return ArmorMaterialTypes.None;
+            }
+        }
+
+        public static ItemCollection AddAllWeaponsHelper(ItemCollection items, bool modifier = false, string arg = "")
         {
             GameObject player = GameManager.Instance.PlayerObject;
             PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
@@ -624,6 +723,9 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
             foreach (WeaponMaterialTypes material in weaponMaterials)
             {
+                if (modifier && material != GetWeaponMatTypeByString(arg))
+                    continue;
+
                 Array enumArray = itemHelper.GetEnumArray(ItemGroups.Weapons);
                 for (int i = 0; i < enumArray.Length - 1; i++)
                 {
@@ -641,6 +743,35 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             return items;
         }
 
+        public static WeaponMaterialTypes GetWeaponMatTypeByString(string arg)
+        {
+            switch (arg)
+            {
+                case "iron":
+                    return WeaponMaterialTypes.Iron;
+                case "steel":
+                    return WeaponMaterialTypes.Steel;
+                case "silver":
+                    return WeaponMaterialTypes.Silver;
+                case "elven":
+                    return WeaponMaterialTypes.Elven;
+                case "dwarven":
+                    return WeaponMaterialTypes.Dwarven;
+                case "mithril":
+                    return WeaponMaterialTypes.Mithril;
+                case "adamantium":
+                    return WeaponMaterialTypes.Adamantium;
+                case "ebony":
+                    return WeaponMaterialTypes.Ebony;
+                case "orcish":
+                    return WeaponMaterialTypes.Orcish;
+                case "daedric":
+                    return WeaponMaterialTypes.Daedric;
+                default:
+                    return WeaponMaterialTypes.None;
+            }
+        }
+
         public static ItemCollection AddAllArtifactsHelper(ItemCollection items)
         {
             GameObject player = GameManager.Instance.PlayerObject;
@@ -656,29 +787,35 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             return items;
         }
 
-        public static ItemCollection AddAllClothingHelper(ItemCollection items)
+        public static ItemCollection AddAllClothingHelper(ItemCollection items, bool modifier = false, string argDye = "", string argGend = "", string argRace = "")
         {
             GameObject player = GameManager.Instance.PlayerObject;
             PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
             ItemHelper itemHelper = DaggerfallUnity.Instance.ItemHelper;
             DaggerfallUnityItem newItem = null;
 
+            Genders gend = GetGenderByString(argGend);
+            Races race = GetRaceByString(argRace);
+
             DyeColors[] clothingDyes =  ItemBuilder.clothingDyes;
-            ItemGroups clothing = (playerEntity.Gender == Genders.Male) ? ItemGroups.MensClothing : ItemGroups.WomensClothing;
+            ItemGroups clothing = (gend == Genders.Male) ? ItemGroups.MensClothing : ItemGroups.WomensClothing;
             foreach (DyeColors dye in clothingDyes)
             {
+                if (modifier && dye != GetClothingDyeTypeByString(argDye))
+                    continue;
+
                 Array enumArray = itemHelper.GetEnumArray(clothing);
                 for (int i = 0; i < enumArray.Length; i++)
                 {
                     ItemTemplate itemTemplate = itemHelper.GetItemTemplate(clothing, i);
-                    if ((playerEntity.Gender == Genders.Male && mensUsableClothing.Contains((MensClothing)enumArray.GetValue(i))) ||
+                    if ((gend == Genders.Male && mensUsableClothing.Contains((MensClothing)enumArray.GetValue(i))) ||
                         womensUsableClothing.Contains((WomensClothing)enumArray.GetValue(i)) || itemTemplate.variants == 0)
                         itemTemplate.variants = 1;
 
                     for (int v = 0; v < itemTemplate.variants; v++)
                     {
                         newItem = new DaggerfallUnityItem(clothing, i);
-                        ItemBuilder.SetRace(newItem, playerEntity.Race);
+                        ItemBuilder.SetRace(newItem, race);
                         newItem.dyeColor = dye;
                         newItem.CurrentVariant = v;
                         items.AddItem(newItem);
@@ -686,6 +823,73 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 }
             }
             return items;
+        }
+
+        public static DyeColors GetClothingDyeTypeByString(string arg)
+        {
+            switch (arg)
+            {
+                case "blue":
+                    return DyeColors.Blue;
+                case "grey":
+                    return DyeColors.Grey;
+                case "red":
+                    return DyeColors.Red;
+                case "darkbrown":
+                    return DyeColors.DarkBrown;
+                case "purple":
+                    return DyeColors.Purple;
+                case "lightbrown":
+                    return DyeColors.LightBrown;
+                case "white":
+                    return DyeColors.White;
+                case "aquamarine":
+                    return DyeColors.Aquamarine;
+                case "yellow":
+                    return DyeColors.Yellow;
+                case "green":
+                    return DyeColors.Green;
+                default:
+                    return DyeColors.Unchanged;
+            }
+        }
+
+        public static Genders GetGenderByString(string arg)
+        {
+            switch (arg)
+            {
+                case "male":
+                    return Genders.Male;
+                case "female":
+                    return Genders.Female;
+                default:
+                    return GameManager.Instance.PlayerEntity.Gender;
+            }
+        }
+
+        public static Races GetRaceByString(string arg)
+        {
+            switch (arg)
+            {
+                case "breton":
+                    return Races.Breton;
+                case "redguard":
+                    return Races.Redguard;
+                case "nord":
+                    return Races.Nord;
+                case "darkelf":
+                    return Races.DarkElf;
+                case "highelf":
+                    return Races.HighElf;
+                case "woodelf":
+                    return Races.WoodElf;
+                case "khajiit":
+                    return Races.Khajiit;
+                case "argonian":
+                    return Races.Argonian;
+                default:
+                    return GameManager.Instance.PlayerEntity.Race;
+            }
         }
 
         public static ItemCollection AddAllBooksHelper(ItemCollection items) // ItemHelper.bookIDNameMapping is readonly private currently, so just do lazy approach for now.
@@ -787,9 +991,14 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             return items;
         }
 
-        public static ItemCollection AddAllIngredientsHelper(ItemCollection items)
+        public static ItemCollection AddAllIngredientsHelper(ItemCollection items, string arg = "")
         {
             DaggerfallUnityItem newItem = null;
+
+            if (!int.TryParse(arg, out int n))
+                n = 1;
+            if (n < 1)
+                n = 1;
 
             foreach (ItemGroups group in ingredientItemGroups)
             {
@@ -798,7 +1007,11 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 for (int i = 0; i < enumArray.Length; i++)
                 {
                     newItem = new DaggerfallUnityItem(group, i);
-                    items.AddItem(newItem);
+
+                    for (int v = 0; v < n; v++)
+                    {
+                        items.AddItem(newItem);
+                    }
                 }
             }
             return items;
