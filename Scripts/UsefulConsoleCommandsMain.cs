@@ -24,6 +24,12 @@ using Wenzil.Console;
 using DaggerfallWorkshop.Game.Items;
 using DaggerfallWorkshop.Game.UserInterfaceWindows;
 using DaggerfallConnect;
+using DaggerfallWorkshop.Game.Questing;
+using System.Collections.Generic;
+using DaggerfallConnect.Utility;
+using DaggerfallConnect.Arena2;
+using DaggerfallWorkshop.Utility;
+using DaggerfallWorkshop.Game.UserInterface;
 
 namespace UsefulConsoleCommands
 {
@@ -44,6 +50,9 @@ namespace UsefulConsoleCommands
         public static int TickRegenFrequency { get; set; }
         public static float RegenAmountModifier { get; set; }
         public static float RestRegenModifier { get; set; }
+
+        public static bool RolePlayRealismBandagingModule { get; set; }
+        public static bool RepairToolsCheck { get; set; }
 
         static PlayerEntity player = GameManager.Instance.PlayerEntity;
 
@@ -78,9 +87,37 @@ namespace UsefulConsoleCommands
             TickRegenFrequency = mod.GetSettings().GetValue<int>("Options", "TickFrequency");
             RegenAmountModifier = mod.GetSettings().GetValue<float>("Options", "RegenMulti");
             RestRegenModifier = mod.GetSettings().GetValue<float>("Options", "RestMulti");
+
+
+            Mod roleplayRealism = ModManager.Instance.GetMod("roleplayrealism");
+            RolePlayRealismBandagingModule = false;
+            if (roleplayRealism != null)
+            {
+                ModSettings rolePlayRealismSettings = roleplayRealism.GetSettings();
+                RolePlayRealismBandagingModule = rolePlayRealismSettings.GetBool("Modules", "bandaging");
+            }
+
+            Mod repairTools = ModManager.Instance.GetMod("repairtools");
+            RepairToolsCheck = false;
+            if (repairTools != null)
+            {
+                RepairToolsCheck = true;
+            }
+
+            // Ralzar's Mod Checks Will Go Here Tomorrow.
         }
 
         #endregion
+
+        public static bool GetRolePlayRealismBandagingCheck()
+        {
+            return RolePlayRealismBandagingModule;
+        }
+
+        public static bool GetRepairToolsCheck()
+        {
+            return RepairToolsCheck;
+        }
 
         public static int GetMagicRegenType()
         {
@@ -122,7 +159,10 @@ namespace UsefulConsoleCommands
                 ConsoleCommandsDatabase.RegisterCommand(ChangeGender.command, ChangeGender.description, ChangeGender.usage, ChangeGender.Execute); // tested
                 ConsoleCommandsDatabase.RegisterCommand(ChangeRace.command, ChangeRace.description, ChangeRace.usage, ChangeRace.Execute); // tested
                 ConsoleCommandsDatabase.RegisterCommand(ChangeFace.command, ChangeFace.description, ChangeFace.usage, ChangeFace.Execute); // tested
-                ConsoleCommandsDatabase.RegisterCommand(ListRegions.command, ListRegions.description, ListRegions.usage, ListRegions.Execute);
+                ConsoleCommandsDatabase.RegisterCommand(QuestTaskToggle.command, QuestTaskToggle.description, QuestTaskToggle.usage, QuestTaskToggle.Execute); // tested
+                //ConsoleCommandsDatabase.RegisterCommand(QuestTesting1.command, QuestTesting1.description, QuestTesting1.usage, QuestTesting1.Execute);
+                //ConsoleCommandsDatabase.RegisterCommand(TeleportTo.command, TeleportTo.description, TeleportTo.usage, TeleportTo.Execute);
+                //ConsoleCommandsDatabase.RegisterCommand(ListRegions.command, ListRegions.description, ListRegions.usage, ListRegions.Execute);
             }
             catch (Exception e)
             {
@@ -130,10 +170,10 @@ namespace UsefulConsoleCommands
             }
         }
 
-        private static class ChangePlayerAttribute
+        private static class ChangePlayerAttribute // No clue if stuff might break with attributes being raised above 100, but oh well, that's up to the user to find out if they want.
         {
             public static readonly string command = "setattrib";
-            public static readonly string description = "Changes the specified attribute's value, between 1 and 100.";
+            public static readonly string description = "Changes the specified attribute's value, between 1 and 1000.";
             public static readonly string usage = "setattrib [attribute] [n]; try something like: 'setattrib strength 75' or 'setattrib per 30' or 'setattrib 4 95' or even 'setattrib all 60'";
 
             public static string Execute(params string[] args)
@@ -145,8 +185,8 @@ namespace UsefulConsoleCommands
 
                 if (!int.TryParse(args[1], out int n))
                     return string.Format("`{0}` is not a number, please use a number for [n].", args[1]);
-                if (n < 1 || n > 100)
-                    return "Invalid amount, [n] must be a value between 1 and 100."; // May change this if attribute values above 100 are allowed and don't cause major issues.
+                if (n < 1 || n > 1000)
+                    return "Invalid amount, [n] must be a value between 1 and 1000."; // May change this if attribute values above 1000 are allowed and don't cause major issues.
 
                 if (player != null)
                 {
@@ -206,10 +246,10 @@ namespace UsefulConsoleCommands
             }
         }
 
-        private static class ChangePlayerSkill
+        private static class ChangePlayerSkill // No clue if stuff might break with skills being raised above 100, but oh well, that's up to the user to find out if they want.
         {
             public static readonly string command = "setskill";
-            public static readonly string description = "Changes the specified skill's value, between 1 and 100.";
+            public static readonly string description = "Changes the specified skill's value, between 1 and 1000.";
             public static readonly string usage = "setskill [skill] [n]; try something like: 'setattrib bluntweapon 75' or 'setskill jump 30' or 'setskill 8 95' or even 'setskill all 60'";
 
             public static string Execute(params string[] args)
@@ -221,8 +261,8 @@ namespace UsefulConsoleCommands
 
                 if (!int.TryParse(args[1], out int n))
                     return string.Format("`{0}` is not a number, please use a number for [n].", args[1]);
-                if (n < 1 || n > 100)
-                    return "Invalid amount, [n] must be a value between 1 and 100."; // May change this if skill values above 100 are allowed and don't cause major issues.
+                if (n < 1 || n > 1000)
+                    return "Invalid amount, [n] must be a value between 1 and 1000."; // May change this if skill values above 1000 are allowed and don't cause major issues.
 
                 if (player != null)
                 {
@@ -527,11 +567,11 @@ namespace UsefulConsoleCommands
             }
         }
 
-        private static class EmptyInventory // Might need to add more modifiers eventually for more control but that's fine, it works fine for now.
+        private static class EmptyInventory
         {
             public static readonly string command = "emptyinventory";
             public static readonly string description = "Removes everything from your inventory, add additional modifier for more control of what is removed.";
-            public static readonly string usage = "emptyinventory [modifier]; try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon'. Without any modifier word, quest items, light sources, horse, wagon, and the spellbook will be preserved.";
+            public static readonly string usage = "emptyinventory [modifier]; try something like: try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon' or 'emptyinventory gear' to keep and equipped items. Without any modifier word, quest items, light sources, horse, wagon, letters of credit, and the spellbook will be preserved.";
 
             public static string Execute(params string[] args)
             {
@@ -577,8 +617,32 @@ namespace UsefulConsoleCommands
                         case "cart":
                             wagonItems.Clear(); // This command clears everything from your wagon inventory.
                             return "Removed all items from your wagon inventory.";
+                        case "equip":
+                        case "gear":
+                        case "keepgear":
+                        case "keepequip":
+                        case "saveequip":
+                        case "savegear":
+                        case "keep_equip":
+                        case "save_equip":
+                        case "keep_gear":
+                        case "save_gear":
+                            for (int i = 0; i < invSize; i++)
+                            {
+                                DaggerfallUnityItem item = playerEntity.Items.GetItem(h);
+                                h++;
+
+                                if (item.IsEquipped || (item.ItemGroup == ItemGroups.MiscItems && item.TemplateIndex == (int)MiscItems.Spellbook))
+                                    continue; // Ignore all equipped items and the spellbook item.
+                                else
+                                {
+                                    playerItems.RemoveItem(item);
+                                    h--;
+                                }
+                            }
+                            return "Removed all items from your inventory excluding any items you have equipped, such as armor, clothing, weapons, accessories, spellbook, etc.";
                         default:
-                            return "Invalid attribute, try something like: try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon'. Without any modifier word, quest items, light sources, horse, wagon, letters of credit, and the spellbook will be preserved.";
+                            return "Invalid argument, try something like: try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon' or 'emptyinventory gear' to keep and equipped items. Without any modifier word, quest items, light sources, horse, wagon, letters of credit, and the spellbook will be preserved.";
                     }
                 }
                 else
@@ -1014,7 +1078,480 @@ namespace UsefulConsoleCommands
             }
         }
 
-        private static class ListRegions
+        private static class QuestTaskToggle // This is still pretty WIP, but hopefully it can still be useful in it's current state to somebody.
+        {
+            public static readonly string command = "questtasks";
+            public static readonly string description = "Allows you to toggle the current set state for various tasks within a quest.";
+            public static readonly string usage = "questtasks; try something like: 'questtasks' then pick a quest you wish to alter the task states of, after selecting the quest then choose the task you want to try and toggle between set and unset, true or false, etc. Keep in mind, for some tasks other conditions must be met before they can be set or unset. This command is for those that know what they are doing, don't blame me if you break a quest with this.";
+
+            public static string Execute(params string[] args)
+            {
+                GameObject player = GameManager.Instance.PlayerObject;
+                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
+                ulong[] uids = null;
+
+                if (args.Length >= 1)
+                    return "Error - Too many arguments, check the usage notes.";
+
+                if (player != null)
+                {
+                    DaggerfallListPickerWindow validQuestPicker = new DaggerfallListPickerWindow(DaggerfallUI.UIManager, DaggerfallUI.UIManager.TopWindow);
+                    validQuestPicker.OnItemPicked += ShowQuestObjectivesPicker_OnItemPicked; // Tell it what to do next after picking a valid quest from the list.
+                    validQuests.Clear(); // Clears the valid quests list before every command use.
+
+                    uids = QuestMachine.Instance.GetAllActiveQuests();
+
+                    for (int i = 0; i < uids.Length; i++)
+                    {
+                        Quest quest = QuestMachine.Instance.GetQuest(uids[i]);
+                        if (quest.GetTaskStates().Length < 1)
+                            continue;
+
+                        string validQuestName = quest.UID + "   " + quest.DisplayName;
+
+                        validQuests.Add(quest);
+                        validQuestPicker.ListBox.AddItem(validQuestName);
+                    }
+
+                    if (validQuestPicker.ListBox.Count > 0)
+                    {
+                        DaggerfallUI.UIManager.PushWindow(validQuestPicker);
+                        return "Here is the list of active and valid quests, pick something.";
+                    }
+                    else
+                        return "You have no valid quests currently active.";
+                }
+                else
+                    return "Error - Something went wrong.";
+            }
+        }
+
+        static List<Quest> validQuests = new List<Quest>();
+
+        public static void ShowQuestObjectivesPicker_OnItemPicked(int index, string itemName)
+        {
+            DaggerfallUI.Instance.PlayOneShot(SoundClips.ButtonClick);
+            DaggerfallUI.UIManager.PopWindow();
+
+            chosenQuestUID = 0;
+            PlayerEntity playerEntity = GameManager.Instance.PlayerEntity;
+            Quest questToUse = validQuests[index]; // Gets the quest associated with what was selected in the list window.
+            validQuestTasks.Clear();
+            chosenQuestUID = questToUse.UID;
+
+            DaggerfallListPickerWindow questTaskPicker = new DaggerfallListPickerWindow(DaggerfallUI.UIManager, DaggerfallUI.UIManager.TopWindow);
+            questTaskPicker.OnItemPicked += PerformToggleTaskAction_OnItemPicked; // Have it do it's thing after picking a valid quest task from the list.
+
+            Quest.TaskState[] taskStates = questToUse.GetTaskStates();
+            if (taskStates == null || taskStates.Length == 0)
+            {
+                // Do Nothing
+            }
+            else
+            {
+                foreach (Quest.TaskState task in taskStates)
+                {
+                    Symbol symbol = task.symbol;
+                    Task.TaskType type = task.type;
+                    bool taskSet = task.set;
+
+                    if (type == Task.TaskType.Headless)
+                    {
+                        validQuestTasks.Add(task);
+                        questTaskPicker.ListBox.AddItem("(Headless)" + "   " + symbol.Name + "   " + taskSet.ToString());
+                    }
+                    else if (type == Task.TaskType.Standard)
+                    {
+                        validQuestTasks.Add(task);
+                        questTaskPicker.ListBox.AddItem("(Standard)" + "   " + symbol.Name + "   " + taskSet.ToString());
+                    }
+                    else if (type == Task.TaskType.PersistUntil)
+                    {
+                        validQuestTasks.Add(task);
+                        questTaskPicker.ListBox.AddItem("(PersistUntil)" + "   " + string.Format("until_{0}", symbol.Name) + "   " + taskSet.ToString());
+                    }
+                    else if (type == Task.TaskType.Variable)
+                    {
+                        validQuestTasks.Add(task);
+                        questTaskPicker.ListBox.AddItem("(Variable)" + "   " + symbol.Name + "   " + taskSet.ToString());
+                    }
+                    else if (type == Task.TaskType.GlobalVarLink)
+                    {
+                        validQuestTasks.Add(task);
+                        questTaskPicker.ListBox.AddItem("(GlobalVarLink)" + "   " + symbol.Name + "   " + taskSet.ToString());
+                    }
+                }
+            }
+
+            if (questTaskPicker.ListBox.Count > 0)
+            {
+                List<ListBox.ListItem> listItems = questTaskPicker.ListBox.ListItems;
+                for (int i = 0; i < listItems.Count; i++)
+                {
+                    if (validQuestTasks[i].set == false)
+                    {
+                        listItems[i].textColor = new Color32(188, 60, 60, 255); // Red
+                    }
+                    else if (validQuestTasks[i].set == true)
+                    {
+                        listItems[i].textColor = new Color32(6, 108, 0, 255); // Green
+                    }
+                    else
+                    {
+                        listItems[i].textColor = DaggerfallUI.DaggerfallDefaultTextColor;
+                    }
+                    listItems[i].selectedTextColor = new Color32(95, 231, 229, 255); // Light Cyan
+                    listItems[i].highlightedTextColor = new Color32(57, 221, 219, 255); // Slightly Darker Cyan
+                    listItems[i].highlightedSelectedTextColor = new Color32(27, 197, 196, 255); // Dark Cyan
+                    listItems[i].shadowColor = new Color32(0, 0, 0, 0); // Removed Shadow
+                }
+
+                DaggerfallUI.UIManager.PushWindow(questTaskPicker);
+            }
+            else
+                DaggerfallUI.MessageBox("That quest has no valid tasks currently available.");
+        }
+
+        static List<Quest.TaskState> validQuestTasks = new List<Quest.TaskState>();
+        public static ulong chosenQuestUID { get; set; }
+
+        public static void PerformToggleTaskAction_OnItemPicked(int index, string itemName)
+        {
+            DaggerfallUI.Instance.PlayOneShot(SoundClips.ButtonClick);
+            DaggerfallUI.UIManager.PopWindow();
+
+            Quest.TaskState taskPicked = validQuestTasks[index]; // Gets the quest task associated with what was selected in the list window.
+
+            Quest usedQuest = QuestMachine.Instance.GetQuest(chosenQuestUID);
+            Quest.TaskState[] tasks = usedQuest.GetTaskStates();
+            Task task = null;
+
+            foreach (Quest.TaskState taskState in tasks) // Tries to match the proper Instance of the quest.
+            {
+                if (taskState.type == taskPicked.type && taskState.symbol == taskPicked.symbol && taskState.set == taskPicked.set)
+                {
+                    task = usedQuest.GetTask(taskState.symbol);
+                    break;
+                }
+            }
+
+            if (task != null && task.IsTriggered == false)
+                task.IsTriggered = true;
+            else if (task != null && task.IsTriggered == true) // So the toggle seems to kind of work, but it's weird since it only allows changing if certain conditions are met sometimes.
+                task.IsTriggered = false;
+        }
+
+        // 5/5/2022, 11:15 PM: Alright, gave up on trying to get this command to work for now, maybe I'll fix it at some point, but not today.
+        /*private static class QuestTesting1
+        {
+            public static readonly string command = "questtesting1";
+            public static readonly string description = "Does quest testing stuff.";
+            public static readonly string usage = "questtesting1 [n]; try something like: 'changeface 5' or 'changeface 9' between 0 and 9 are all valid face index values.";
+
+            public static string Execute(params string[] args)
+            {
+                GameObject player = GameManager.Instance.PlayerObject;
+                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
+                ulong[] uids = null;
+
+                if (args.Length >= 1)
+                    return "Error - Too many arguments, check the usage notes.";
+
+                if (player != null)
+                {
+                    DaggerfallListPickerWindow validQuestPicker = new DaggerfallListPickerWindow(DaggerfallUI.UIManager, DaggerfallUI.UIManager.TopWindow);
+                    validQuestPicker.OnItemPicked += ShowQuestObjectivesPicker_OnItemPicked; // Tell it what to do next after picking a valid quest from the list.
+                    validQuests.Clear(); // Clears the valid quests list before every command use.
+
+                    uids = QuestMachine.Instance.GetAllActiveQuests();
+
+                    for (int i = 0; i < uids.Length; i++) // Tomorrow do rest of work for listing active valid quests basically and such.
+                    {
+                        Quest quest = QuestMachine.Instance.GetQuest(uids[i]);
+                        if (quest.GetQuestors().Length < 1)
+                            continue;
+
+                        string validQuestName = quest.DisplayName; // Just do this simple name for now, nothing else to keep it simple for testing.
+
+                        validQuests.Add(quest);
+                        validQuestPicker.ListBox.AddItem(validQuestName);
+                    }
+
+                    if (validQuestPicker.ListBox.Count > 0)
+                    {
+                        DaggerfallUI.UIManager.PushWindow(validQuestPicker);
+                        return "Here is the list of active and valid quests, pick something.";
+                    }
+                    else
+                        return "You have no valid quests currently active.";
+                }
+                else
+                    return "Error - Something went wrong.";
+            }
+        }
+
+        static List<Quest> validQuests = new List<Quest>();
+
+        public static void ShowQuestObjectivesPicker_OnItemPicked(int index, string itemName)
+        {
+            DaggerfallUI.Instance.PlayOneShot(SoundClips.ButtonClick);
+            DaggerfallUI.UIManager.PopWindow();
+
+            PlayerEntity playerEntity = GameManager.Instance.PlayerEntity;
+            Quest questToUse = validQuests[index]; // Gets the quest associated with what was selected in the list window.
+            validQuestResources.Clear();
+
+            DaggerfallListPickerWindow questObjectivePicker = new DaggerfallListPickerWindow(DaggerfallUI.UIManager, DaggerfallUI.UIManager.TopWindow);
+            questObjectivePicker.OnItemPicked += PerformDebugAction_OnItemPicked; // Have it to it's thing after picking a valid quest objective from the list.
+
+            QuestResource[] placeResources = questToUse.GetAllResources(typeof(Place));
+            if (placeResources == null || placeResources.Length == 0)
+            {
+                // Do Nothing
+            }
+            else
+            {
+                foreach (QuestResource resource in placeResources)
+                {
+                    Place place = (Place)resource;
+                    SiteDetails siteDets = place.SiteDetails;
+                    string regionName = siteDets.regionName;
+
+                    if (siteDets.siteType == SiteTypes.Dungeon)
+                    {
+                        validQuestResources.Add(resource);
+                        questObjectivePicker.ListBox.AddItem("(" + regionName + ")" + "   " + siteDets.locationName);
+                    }
+                    else if (siteDets.siteType == SiteTypes.Town)
+                    {
+                        validQuestResources.Add(resource);
+                        questObjectivePicker.ListBox.AddItem("(" + regionName + ")" + "   " + siteDets.locationName);
+                    }
+                    else if (siteDets.siteType == SiteTypes.Building)
+                    {
+                        validQuestResources.Add(resource);
+                        questObjectivePicker.ListBox.AddItem("(" + regionName + ")" + "   " + siteDets.buildingName);
+                    }
+                }
+            }
+
+            QuestResource[] personResources = questToUse.GetAllResources(typeof(Person));
+            if (personResources == null || personResources.Length == 0)
+            {
+                // Do Nothing
+            }
+            else
+            {
+                foreach (QuestResource resource in personResources)
+                {
+                    Person person = (Person)resource;
+
+                    if (person.IsIndividualNPC && !person.IsDestroyed && !person.IsHidden)
+                    {
+                        validQuestResources.Add(resource);
+                        questObjectivePicker.ListBox.AddItem("(" + person.HomeRegionName + ")" + "   " + person.DisplayName);
+                    }
+                }
+            }
+
+            QuestResource[] itemResources = questToUse.GetAllResources(typeof(Item));
+            if (itemResources == null || itemResources.Length == 0)
+            {
+                // Do Nothing
+            }
+            else
+            {
+                foreach (QuestResource resource in itemResources)
+                {
+                    Item item = (Item)resource;
+
+                    if (!item.IsHidden && !item.PlayerDropped)
+                    {
+                        validQuestResources.Add(resource);
+                        questObjectivePicker.ListBox.AddItem("(Quest Item)" + "   " + item.DaggerfallUnityItem.ItemName);
+                    }
+                }
+            }
+
+            QuestResource[] foeResources = questToUse.GetAllResources(typeof(Foe));
+            if (foeResources == null || foeResources.Length == 0)
+            {
+                // Do Nothing
+            }
+            else
+            {
+                foreach (QuestResource resource in foeResources)
+                {
+                    Foe foe = (Foe)resource;
+
+                    if (!foe.IsHidden)
+                    {
+                        validQuestResources.Add(resource);
+                        questObjectivePicker.ListBox.AddItem("(Quest Mobile)" + "   " + foe.FoeType); // Not sure if will display as string properly.
+                    }
+                }
+            }
+
+            if (questObjectivePicker.ListBox.Count > 0)
+                DaggerfallUI.UIManager.PushWindow(questObjectivePicker);
+            else
+                DaggerfallUI.MessageBox("That quest has no valid resources currently available.");
+        }
+
+        static List<QuestResource> validQuestResources = new List<QuestResource>();
+        public static bool consoleTeleportCheck { get; set; }
+        public static QuestMarker usedQuestMarkerGlobal { get; set; }
+
+        public static void PerformDebugAction_OnItemPicked(int index, string itemName)
+        {
+            DaggerfallUI.Instance.PlayOneShot(SoundClips.ButtonClick);
+            DaggerfallUI.UIManager.PopWindow();
+
+            PlayerEntity playerEntity = GameManager.Instance.PlayerEntity;
+            QuestResource resourceUsed = validQuestResources[index]; // Gets the quest resource associated with what was selected in the list window.
+            Place usedPlace = null;
+
+            Place place = resourceUsed.ParentQuest.GetPlace(resourceUsed.Symbol);
+            Person person = resourceUsed.ParentQuest.GetPerson(resourceUsed.Symbol);
+
+            if (place != null)
+                usedPlace = place;
+            else if (person != null)
+            {
+                Symbol personPlace = person.GetAssignedPlaceSymbol();
+                place = resourceUsed.ParentQuest.GetPlace(personPlace);
+                usedPlace = place;
+            }
+
+            usedQuestMarkerGlobal = usedPlace.SiteDetails.selectedMarker;
+            DFLocation locationInfo = DaggerfallUnity.Instance.ContentReader.MapFileReader.GetLocation(DaggerfallUnity.Instance.ContentReader.MapFileReader.GetRegionIndex(usedPlace.SiteDetails.regionName), (int)usedPlace.SiteDetails.locationId); // May have to change "mapId" to "locationId" not sure yet.
+            DFPosition mapPixel = MapsFile.LongitudeLatitudeToMapPixel(locationInfo.MapTableData.Longitude, locationInfo.MapTableData.Latitude);
+            DFPosition worldPos = MapsFile.MapPixelToWorldCoord(mapPixel.X, mapPixel.Y);
+
+            if (usedPlace.SiteDetails.siteType == SiteTypes.Dungeon)
+            {
+                // Spawn inside dungeon at this world position
+                consoleTeleportCheck = true;
+                PlayerEnterExit.OnRespawnerComplete += TeleToQuestMarker_OnRespawnerComplete;
+                GameManager.Instance.PlayerEnterExit.RespawnPlayer(worldPos.X, worldPos.Y, true, true);
+            }
+            else if (usedPlace.SiteDetails.siteType == SiteTypes.Building)
+            {
+                DFBlock[] blocks = RMBLayout.GetLocationBuildingData(locationInfo);
+                int width = locationInfo.Exterior.ExteriorData.Width;
+                int height = locationInfo.Exterior.ExteriorData.Height;
+                List<StaticDoor> doorsOut = new List<StaticDoor>();
+
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        // Iterate through all buildings in this block
+                        int buildIndex = y * width + x;
+                        BuildingSummary[] buildingSummary = RMBLayout.GetBuildingData(blocks[buildIndex], x, y);
+
+                        if (buildingSummary[x].buildingKey == place.SiteDetails.buildingKey)
+                        {
+                            foreach (DFBlock.RmbBlock3dObjectRecord obj in blocks[buildIndex].RmbBlock.Misc3dObjectRecords)
+                            {
+                                ModelData modelData;
+                                DaggerfallUnity.Instance.MeshReader.GetModelData(obj.ModelIdNum, out modelData); // No clue if this will all work, but will just have to test and see for "StaticDoor."
+
+                                doorsOut.AddRange(GameObjectHelper.GetStaticDoors(ref modelData, blocks[buildIndex].Index, 0, buildingSummary[x].Matrix));
+
+                                if (doorsOut.Count > 0 && doorsOut[0].buildingKey == place.SiteDetails.buildingKey)
+                                    break;
+                            }
+                        }
+                        if (doorsOut.Count > 0 && doorsOut[0].buildingKey == place.SiteDetails.buildingKey)
+                            break;
+                    }
+                    if (doorsOut.Count > 0 && doorsOut[0].buildingKey == place.SiteDetails.buildingKey)
+                        break;
+                }
+
+                consoleTeleportCheck = true;
+                PlayerEnterExit.OnRespawnerComplete += TeleToQuestMarker_OnRespawnerComplete;
+                GameManager.Instance.PlayerEnterExit.RespawnPlayer(worldPos.X, worldPos.Y, false, true, doorsOut.ToArray(), true, true, true);
+            }
+        }
+
+        public static void TeleToQuestMarker_OnRespawnerComplete()
+        {
+            if (consoleTeleportCheck && GameManager.Instance.PlayerEnterExit.IsPlayerInsideDungeon)
+            {
+                QuestMarker questMarker = usedQuestMarkerGlobal;
+
+                // Teleport PC to the chosen quest marker within the current dungeon.
+                Vector3 dungeonBlockPosition = new Vector3(questMarker.dungeonX * RDBLayout.RDBSide, 0, questMarker.dungeonZ * RDBLayout.RDBSide);
+                GameManager.Instance.PlayerObject.transform.localPosition = dungeonBlockPosition + questMarker.flatPosition;
+            }
+            else if (consoleTeleportCheck && GameManager.Instance.PlayerEnterExit.IsPlayerInsideBuilding)
+            {
+                QuestMarker questMarker = usedQuestMarkerGlobal;
+
+                // Find active marker type - saves on applying building matrix, etc. to derive position again
+                Vector3 markerPos;
+                if (GameManager.Instance.PlayerEnterExit.Interior.FindClosestMarker(out markerPos, (DaggerfallInterior.InteriorMarkerTypes)questMarker.markerType, GameManager.Instance.PlayerObject.transform.position))
+                    GameManager.Instance.PlayerObject.transform.position = markerPos; // start here tomorrow?
+            }
+            else
+                return;
+
+            GameManager.Instance.PlayerMotor.FixStanding();
+            consoleTeleportCheck = false;
+            PlayerEnterExit.OnRespawnerComplete -= TeleToQuestMarker_OnRespawnerComplete;
+        }*/
+
+        // Likely won't have this for the initial release, will see about later if I start to find better methods later on.
+        /*private static class TeleportTo
+        {
+            public static readonly string command = "teleportto";
+            public static readonly string description = "Instantly teleports you to a specific location in the world.";
+            public static readonly string usage = "teleportto [modifier]; try something like: .";
+
+            public static string Execute(params string[] args)
+            {
+                GameObject player = GameManager.Instance.PlayerObject;
+                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
+
+                if (args.Length <= 0)
+                    return "Error - An argument is required, check the usage notes.";
+                if (args.Length > 1)
+                    return "Error - Too many arguments, check the usage notes.";
+
+                if (player != null)
+                {
+                    switch (args[0])
+                    {
+                        case "male":
+                        case "man":
+                        case "m":
+                        case "0":
+                            if (playerEntity.Gender == Genders.Male)
+                                return "You are already a male.";
+                            playerEntity.Gender = Genders.Male;
+                            return "You are now a male.";
+                        case "female":
+                        case "woman":
+                        case "f":
+                        case "w":
+                        case "1":
+                            if (playerEntity.Gender == Genders.Female)
+                                return "You are already a female.";
+                            playerEntity.Gender = Genders.Female;
+                            return "You are now a female.";
+                        default:
+                            return "Error - You need to enter a gender, check usage notes.";
+                    }
+                }
+                else
+                    return "Error - Something went wrong.";
+            }
+        }*/
+
+        // Just for testing mostly.
+        /*private static class ListRegions
         {
             public static readonly string command = "listallregions";
             public static readonly string description = "Lists all regions.)";
@@ -1033,6 +1570,6 @@ namespace UsefulConsoleCommands
 
                 return "All regions listed.";
             }
-        }
+        }*/
     }
 }

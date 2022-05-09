@@ -367,6 +367,11 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                         items = AddAllIngredientsHelper(items); return items;
                     case "jewelry":
                         items = AddJewelryItemsHelper(items); return items;
+                    case "consume":
+                    case "consumes":
+                    case "consumable":
+                    case "consumables":
+                        items = AddConsumableItemsHelper(items); return items;
                     default:
                         return null;
                 }
@@ -1099,6 +1104,53 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 newItem = new DaggerfallUnityItem(ItemGroups.Jewellery, i);
                 items.AddItem(newItem);
             }
+            return items;
+        }
+
+        public static ItemCollection AddConsumableItemsHelper(ItemCollection items)
+        {
+            DaggerfallUnityItem newItem = null;
+
+            newItem = new DaggerfallUnityItem(ItemGroups.Weapons, (int)Weapons.Arrow);
+            newItem.stackCount = 500;
+            items.AddItem(newItem);
+
+            newItem = new DaggerfallUnityItem(ItemGroups.MiscItems, (int)MiscItems.Soul_trap);
+            newItem.TrappedSoulType = MobileTypes.None; // Empty
+            items.AddItem(newItem);
+
+            if (DaggerfallUnity.Settings.PlayerTorchFromItems)
+            {
+                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, (int)UselessItems2.Oil);
+                newItem.stackCount = 500;
+                items.AddItem(newItem);
+            }
+
+            if (UsefulConsoleCommands.UsefulConsoleCommandsMain.RolePlayRealismBandagingModule)
+            {
+                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, (int)UselessItems2.Bandage);
+                newItem.stackCount = 500;
+                items.AddItem(newItem);
+            }
+
+            if (UsefulConsoleCommands.UsefulConsoleCommandsMain.RepairToolsCheck)
+            {
+                for (int i = 800; i < 805; i++) // Test later to see if it gives all tools or not, otherwise will have to change these loop values a bit.
+                {
+                    newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, i);
+                    items.AddItem(newItem);
+                }
+            }
+
+            // Will likely put some of Ralzar's mods consumable type items here, tomorrow though, I'm sleepy.
+
+            List<int> recipeKeys = GameManager.Instance.EntityEffectBroker.GetPotionRecipeKeys();
+            for (int i = 0; i < recipeKeys.Count; i++)
+            {
+                newItem = ItemBuilder.CreatePotion(recipeKeys[i], 500);
+                items.AddItem(newItem);
+            }
+
             return items;
         }
 
