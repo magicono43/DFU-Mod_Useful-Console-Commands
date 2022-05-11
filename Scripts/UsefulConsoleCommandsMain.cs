@@ -53,6 +53,8 @@ namespace UsefulConsoleCommands
 
         public static bool RolePlayRealismBandagingModule { get; set; }
         public static bool RepairToolsCheck { get; set; }
+        public static bool RealisticWagonCheck { get; set; }
+        public static bool ClimatesAndCaloriesCheck { get; set; }
 
         static PlayerEntity player = GameManager.Instance.PlayerEntity;
 
@@ -104,7 +106,19 @@ namespace UsefulConsoleCommands
                 RepairToolsCheck = true;
             }
 
-            // Ralzar's Mod Checks Will Go Here Tomorrow.
+            Mod realisticWagon = ModManager.Instance.GetMod("Realistic Wagon");
+            RealisticWagonCheck = false;
+            if (realisticWagon != null)
+            {
+                RealisticWagonCheck = true;
+            }
+
+            Mod climatesAndCalories = ModManager.Instance.GetMod("Climates & Calories"); // Test to make sure this works tomorrow and the continue on, hopefully feeling better tomorrow as well.
+            ClimatesAndCaloriesCheck = false;
+            if (climatesAndCalories != null)
+            {
+                ClimatesAndCaloriesCheck = true;
+            }
         }
 
         #endregion
@@ -117,6 +131,16 @@ namespace UsefulConsoleCommands
         public static bool GetRepairToolsCheck()
         {
             return RepairToolsCheck;
+        }
+
+        public static bool GetRealisticWagonCheck()
+        {
+            return RealisticWagonCheck;
+        }
+
+        public static bool GetClimatesAndCaloriesCheckCheck()
+        {
+            return ClimatesAndCaloriesCheck;
         }
 
         public static int GetMagicRegenType()
@@ -159,6 +183,8 @@ namespace UsefulConsoleCommands
                 ConsoleCommandsDatabase.RegisterCommand(ChangeGender.command, ChangeGender.description, ChangeGender.usage, ChangeGender.Execute); // tested
                 ConsoleCommandsDatabase.RegisterCommand(ChangeRace.command, ChangeRace.description, ChangeRace.usage, ChangeRace.Execute); // tested
                 ConsoleCommandsDatabase.RegisterCommand(ChangeFace.command, ChangeFace.description, ChangeFace.usage, ChangeFace.Execute); // tested
+                ConsoleCommandsDatabase.RegisterCommand(ClearMagic.command, ClearMagic.description, ClearMagic.usage, ClearMagic.Execute); // tested
+                ConsoleCommandsDatabase.RegisterCommand(ViewNPCReputation.command, ViewNPCReputation.description, ViewNPCReputation.usage, ViewNPCReputation.Execute); // tested
                 ConsoleCommandsDatabase.RegisterCommand(QuestTaskToggle.command, QuestTaskToggle.description, QuestTaskToggle.usage, QuestTaskToggle.Execute); // tested
                 //ConsoleCommandsDatabase.RegisterCommand(QuestTesting1.command, QuestTesting1.description, QuestTesting1.usage, QuestTesting1.Execute);
                 //ConsoleCommandsDatabase.RegisterCommand(TeleportTo.command, TeleportTo.description, TeleportTo.usage, TeleportTo.Execute);
@@ -250,7 +276,7 @@ namespace UsefulConsoleCommands
         {
             public static readonly string command = "setskill";
             public static readonly string description = "Changes the specified skill's value, between 1 and 1000.";
-            public static readonly string usage = "setskill [skill] [n]; try something like: 'setattrib bluntweapon 75' or 'setskill jump 30' or 'setskill 8 95' or even 'setskill all 60'";
+            public static readonly string usage = "setskill [skill] [n] ['xp' if you want tallies and not levels]; try something like: 'setskill bluntweapon 75' or 'setskill jump 30' or 'setskill 8 95' or even 'setskill all 60'. Also 'setskill swimming 200 xp'";
 
             public static string Execute(params string[] args)
             {
@@ -261,8 +287,11 @@ namespace UsefulConsoleCommands
 
                 if (!int.TryParse(args[1], out int n))
                     return string.Format("`{0}` is not a number, please use a number for [n].", args[1]);
-                if (n < 1 || n > 1000)
+                if (args.Length == 2 && (n < 1 || n > 1000))
                     return "Invalid amount, [n] must be a value between 1 and 1000."; // May change this if skill values above 1000 are allowed and don't cause major issues.
+
+                if (args.Length > 2 && args[2] != "xp")
+                    return "Invalid entry, see usage notes.";
 
                 if (player != null)
                 {
@@ -274,75 +303,140 @@ namespace UsefulConsoleCommands
                         case "medic":
                         case "doctor":
                         case "first-aid":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Medical, (short)n);
+                                return string.Format("Medical skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(0, (short)n); // Possibly try and make this switch statement more compact vertically later, if it still allows it to be easily human readable.
                             return string.Format("Medical skill was set to {0}.", n);
                         case "etiquette":
                         case "eti":
                         case "1":
                         case "posh":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Etiquette, (short)n);
+                                return string.Format("Etiquette skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(1, (short)n);
                             return string.Format("Etiquette skill was set to {0}.", n);
                         case "streetwise":
                         case "str":
                         case "2":
                         case "sw":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Streetwise, (short)n);
+                                return string.Format("Streetwise skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(2, (short)n);
                             return string.Format("Streetwise skill was set to {0}.", n);
                         case "jumping":
                         case "jum":
                         case "3":
                         case "jump":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Jumping, (short)n);
+                                return string.Format("Jumping skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(3, (short)n);
                             return string.Format("Jumping skill was set to {0}.", n);
                         case "orcish":
                         case "orc":
                         case "4":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Orcish, (short)n);
+                                return string.Format("Orcish skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(4, (short)n);
                             return string.Format("Orcish skill was set to {0}.", n);
                         case "harpy":
                         case "har":
                         case "5":
                         case "harp":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Harpy, (short)n);
+                                return string.Format("Harpy skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(5, (short)n);
                             return string.Format("Harpy skill was set to {0}.", n);
                         case "giantish":
                         case "gia":
                         case "6":
                         case "giant":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Giantish, (short)n);
+                                return string.Format("Giantish skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(6, (short)n);
                             return string.Format("Giantish skill was set to {0}.", n);
                         case "dragonish":
                         case "dra":
                         case "7":
                         case "dragon":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Dragonish, (short)n);
+                                return string.Format("Dragonish skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(7, (short)n);
                             return string.Format("Dragonish skill was set to {0}.", n);
                         case "nymph":
                         case "nym":
                         case "8":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Nymph, (short)n);
+                                return string.Format("Nymph skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(8, (short)n);
                             return string.Format("Nymph skill was set to {0}.", n);
                         case "daedric":
                         case "dae":
                         case "9":
                         case "demon":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Daedric, (short)n);
+                                return string.Format("Daedric skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(9, (short)n);
                             return string.Format("Daedric skill was set to {0}.", n);
                         case "spriggan":
                         case "spr":
                         case "10":
                         case "tree":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Spriggan, (short)n);
+                                return string.Format("Spriggan skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(10, (short)n);
                             return string.Format("Spriggan skill was set to {0}.", n);
                         case "centaurian":
                         case "cen":
                         case "11":
                         case "cent":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Centaurian, (short)n);
+                                return string.Format("Centaurian skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(11, (short)n);
                             return string.Format("Centaurian skill was set to {0}.", n);
                         case "impish":
                         case "imp":
                         case "12":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Impish, (short)n);
+                                return string.Format("Impish skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(12, (short)n);
                             return string.Format("Impish skill was set to {0}.", n);
                         case "lockpicking":
@@ -353,6 +447,11 @@ namespace UsefulConsoleCommands
                         case "lock-picking":
                         case "lock-pick":
                         case "pick-lock":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Lockpicking, (short)n);
+                                return string.Format("Lockpicking skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(13, (short)n);
                             return string.Format("Lockpicking skill was set to {0}.", n);
                         case "mercantile":
@@ -361,6 +460,11 @@ namespace UsefulConsoleCommands
                         case "merchant":
                         case "haggle":
                         case "barter":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Mercantile, (short)n);
+                                return string.Format("Mercantile skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(14, (short)n);
                             return string.Format("Mercantile skill was set to {0}.", n);
                         case "pickpocket":
@@ -372,6 +476,11 @@ namespace UsefulConsoleCommands
                         case "pocket-pick":
                         case "pickpocketing":
                         case "pick-pocketing":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Pickpocket, (short)n);
+                                return string.Format("Pickpocket skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(15, (short)n);
                             return string.Format("Pickpocket skill was set to {0}.", n);
                         case "stealth":
@@ -379,18 +488,33 @@ namespace UsefulConsoleCommands
                         case "16":
                         case "sneak":
                         case "sneaking":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Stealth, (short)n);
+                                return string.Format("Stealth skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(16, (short)n);
                             return string.Format("Stealth skill was set to {0}.", n);
                         case "swimming":
                         case "swi":
                         case "17":
                         case "swim":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Swimming, (short)n);
+                                return string.Format("Swimming skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(17, (short)n);
                             return string.Format("Swimming skill was set to {0}.", n);
                         case "climbing":
                         case "cli":
                         case "18":
                         case "climb":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Climbing, (short)n);
+                                return string.Format("Climbing skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(18, (short)n);
                             return string.Format("Climbing skill was set to {0}.", n);
                         case "backstabbing":
@@ -402,6 +526,11 @@ namespace UsefulConsoleCommands
                         case "back-stab":
                         case "back-stabbing":
                         case "ambush":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Backstabbing, (short)n);
+                                return string.Format("Backstabbing skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(19, (short)n);
                             return string.Format("Backstabbing skill was set to {0}.", n);
                         case "dodging":
@@ -410,6 +539,11 @@ namespace UsefulConsoleCommands
                         case "dodge":
                         case "avoid":
                         case "avoidance":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Dodging, (short)n);
+                                return string.Format("Dodging skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(20, (short)n);
                             return string.Format("Dodging skill was set to {0}.", n);
                         case "running":
@@ -419,6 +553,11 @@ namespace UsefulConsoleCommands
                         case "sprinting":
                         case "runner":
                         case "sonic":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Running, (short)n);
+                                return string.Format("Running skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(21, (short)n);
                             return string.Format("Running skill was set to {0}.", n);
                         case "destruction":
@@ -427,6 +566,11 @@ namespace UsefulConsoleCommands
                         case "destro":
                         case "destruct":
                         case "black":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Destruction, (short)n);
+                                return string.Format("Destruction skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(22, (short)n);
                             return string.Format("Destruction skill was set to {0}.", n);
                         case "restoration":
@@ -437,6 +581,11 @@ namespace UsefulConsoleCommands
                         case "restore":
                         case "healing":
                         case "white":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Restoration, (short)n);
+                                return string.Format("Restoration skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(23, (short)n);
                             return string.Format("Restoration skill was set to {0}.", n);
                         case "illusion":
@@ -444,18 +593,33 @@ namespace UsefulConsoleCommands
                         case "24":
                         case "trickery":
                         case "mesmer":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Illusion, (short)n);
+                                return string.Format("Illusion skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(24, (short)n);
                             return string.Format("Illusion skill was set to {0}.", n);
                         case "alteration":
                         case "alt":
                         case "25":
                         case "alter":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Alteration, (short)n);
+                                return string.Format("Alteration skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(25, (short)n);
                             return string.Format("Alteration skill was set to {0}.", n);
                         case "thaumaturgy":
                         case "tha":
                         case "26":
                         case "thaum":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Thaumaturgy, (short)n);
+                                return string.Format("Thaumaturgy skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(26, (short)n);
                             return string.Format("Thaumaturgy skill was set to {0}.", n);
                         case "mysticism":
@@ -463,6 +627,11 @@ namespace UsefulConsoleCommands
                         case "27":
                         case "myst":
                         case "mystic":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Mysticism, (short)n);
+                                return string.Format("Mysticism skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(27, (short)n);
                             return string.Format("Mysticism skill was set to {0}.", n);
                         case "shortblade":
@@ -475,6 +644,11 @@ namespace UsefulConsoleCommands
                         case "knives":
                         case "knifefighting":
                         case "knife-fighting":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.ShortBlade, (short)n);
+                                return string.Format("ShortBlade skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(28, (short)n);
                             return string.Format("ShortBlade skill was set to {0}.", n);
                         case "longblade":
@@ -485,6 +659,11 @@ namespace UsefulConsoleCommands
                         case "long-blade":
                         case "longsword":
                         case "long-sword":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.LongBlade, (short)n);
+                                return string.Format("LongBlade skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(29, (short)n);
                             return string.Format("LongBlade skill was set to {0}.", n);
                         case "handtohand":
@@ -502,11 +681,21 @@ namespace UsefulConsoleCommands
                         case "brawl":
                         case "boxer":
                         case "boxing":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.HandToHand, (short)n);
+                                return string.Format("HandToHand skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(30, (short)n);
                             return string.Format("HandToHand skill was set to {0}.", n);
                         case "axe":
                         case "axes":
                         case "31":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Axe, (short)n);
+                                return string.Format("Axe skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(31, (short)n);
                             return string.Format("Axe skill was set to {0}.", n);
                         case "bluntweapon":
@@ -521,6 +710,11 @@ namespace UsefulConsoleCommands
                         case "bluntweapons":
                         case "blunt-weapon":
                         case "blunt-weapons":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.BluntWeapon, (short)n);
+                                return string.Format("BluntWeapon skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(32, (short)n);
                             return string.Format("BluntWeapon skill was set to {0}.", n);
                         case "archery":
@@ -534,6 +728,11 @@ namespace UsefulConsoleCommands
                         case "marksmanship":
                         case "bow":
                         case "bows":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.Archery, (short)n);
+                                return string.Format("Archery skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(33, (short)n);
                             return string.Format("Archery skill was set to {0}.", n);
                         case "criticalstrike":
@@ -552,14 +751,25 @@ namespace UsefulConsoleCommands
                         case "critical-hits":
                         case "critstrike":
                         case "crithit":
+                            if (args.Length > 2)
+                            {
+                                playerEntity.TallySkill(DFCareer.Skills.CriticalStrike, (short)n);
+                                return string.Format("CriticalStrike skill was given {0} 'xp/tallies'.", n);
+                            }
                             playerEntity.Skills.SetPermanentSkillValue(34, (short)n);
                             return string.Format("CriticalStrike skill was set to {0}.", n);
                         case "all":
+                            if (args.Length > 2)
+                            {
+                                for (int i = 0; i < 35; i++)
+                                    playerEntity.TallySkill(DFCareer.Skills.CriticalStrike, (short)n);
+                                return string.Format("All skills were given {0} 'xp/tallies'.", n);
+                            }
                             for (int i = 0; i < 35; i++)
                                 playerEntity.Skills.SetPermanentSkillValue(i, (short)n);
                             return string.Format("All skills were set to {0}.", n);
                         default:
-                            return "Invalid skill, try something like: 'setattrib bluntweapon 75' or 'setskill jump 30' or 'setskill 8 95' or even 'setskill all 60'";
+                            return "Invalid skill, try something like: 'setskill bluntweapon 75' or 'setskill jump 30' or 'setskill 8 95' or even 'setskill all 60'. Also 'setskill swimming 200 xp'";
                     }
                 }
                 else
@@ -1072,6 +1282,56 @@ namespace UsefulConsoleCommands
                         return "You are already using that face index.";
                     playerEntity.FaceIndex = n;
                     return "You now have a new face.";
+                }
+                else
+                    return "Error - Something went wrong.";
+            }
+        }
+
+        private static class ClearMagic
+        {
+            public static readonly string command = "clearmagic";
+            public static readonly string description = "Removes all magic effect bundles from your character.";
+            public static readonly string usage = "clearmagic; try something like: clearmagic";
+
+            public static string Execute(params string[] args)
+            {
+                GameObject player = GameManager.Instance.PlayerObject;
+                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
+
+                if (args.Length > 0)
+                    return "Error - Too many arguments, check the usage notes.";
+
+                if (player != null)
+                {
+                    EntityEffectManager manager = GameManager.Instance.PlayerEffectManager;
+                    manager.ClearSpellBundles();
+                    return "All magic spell bundles removed from you.";
+                }
+                else
+                    return "Error - Something went wrong.";
+            }
+        }
+
+        private static class ViewNPCReputation // Finish this command tomorrow and finish any of the others I had planned and finally release this mod to the public and start on next project, finally.
+        {
+            public static readonly string command = "viewnpcrep";
+            public static readonly string description = "Shows the associated faction reptuation you currently have with the last clicked NPC.";
+            public static readonly string usage = "viewnpcrep; try something like: viewnpcrep";
+
+            public static string Execute(params string[] args)
+            {
+                GameObject player = GameManager.Instance.PlayerObject;
+                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
+
+                if (args.Length > 0)
+                    return "Error - Too many arguments, check the usage notes.";
+
+                if (player != null)
+                {
+                    EntityEffectManager manager = GameManager.Instance.PlayerEffectManager;
+                    manager.ClearSpellBundles();
+                    return "All magic spell bundles removed from you.";
                 }
                 else
                     return "Error - Something went wrong.";

@@ -372,6 +372,12 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                     case "consumable":
                     case "consumables":
                         items = AddConsumableItemsHelper(items); return items;
+                    case "mod":
+                    case "mods":
+                    case "modded":
+                    case "moditems":
+                    case "moddeditems":
+                        items = AddModdedItemsHelper(items); return items;
                     default:
                         return null;
                 }
@@ -1142,13 +1148,69 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 }
             }
 
-            // Will likely put some of Ralzar's mods consumable type items here, tomorrow though, I'm sleepy.
+            if (UsefulConsoleCommands.UsefulConsoleCommandsMain.RealisticWagonCheck)
+            {
+                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, 541); // Sugar Lumps
+                items.AddItem(newItem);
+
+                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, 542); // Wagon Parts
+                items.AddItem(newItem);
+            }
+
+            if (UsefulConsoleCommands.UsefulConsoleCommandsMain.ClimatesAndCaloriesCheck)
+            {
+                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, 530); // Camping Equipment
+                items.AddItem(newItem);
+
+                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, 531); // Rations
+                items.AddItem(newItem);
+
+                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, 539); // Waterskin
+                items.AddItem(newItem);
+
+                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, 540); // Tent
+                items.AddItem(newItem);
+            }
 
             List<int> recipeKeys = GameManager.Instance.EntityEffectBroker.GetPotionRecipeKeys();
             for (int i = 0; i < recipeKeys.Count; i++)
             {
                 newItem = ItemBuilder.CreatePotion(recipeKeys[i], 500);
                 items.AddItem(newItem);
+            }
+
+            return items;
+        }
+
+        public static ItemCollection AddModdedItemsHelper(ItemCollection items) // Any modded items that use variants to build them will likely not work properly.
+        {
+            // Add any modded items registered in applicable groups
+            for (int i = 0; i < Enum.GetNames(typeof(ItemGroups)).Length; i++)
+            {
+                int[] customItemTemplates = GameManager.Instance.ItemHelper.GetCustomItemsForGroup((ItemGroups)i);
+                if (customItemTemplates.Length > 0)
+                {
+                    for (int n = 0; n < customItemTemplates.Length; n++)
+                    {
+                        ItemTemplate itemTemplate = GameManager.Instance.ItemHelper.GetItemTemplate((ItemGroups)i, customItemTemplates[n]);
+
+                        DaggerfallUnityItem item = ItemBuilder.CreateItem((ItemGroups)i, customItemTemplates[n]);
+
+                        // Setup specific group stats
+                        if ((ItemGroups)i == ItemGroups.Weapons)
+                        {
+                            WeaponMaterialTypes material = FormulaHelper.RandomMaterial(GameManager.Instance.PlayerEntity.Level);
+                            ItemBuilder.ApplyWeaponMaterial(item, material);
+                        }
+                        else if ((ItemGroups)i == ItemGroups.Armor)
+                        {
+                            ArmorMaterialTypes material = FormulaHelper.RandomArmorMaterial(GameManager.Instance.PlayerEntity.Level);
+                            ItemBuilder.ApplyArmorSettings(item, GameManager.Instance.PlayerEntity.Gender, GameManager.Instance.PlayerEntity.Race, material);
+                        }
+
+                        items.AddItem(item);
+                    }
+                }
             }
 
             return items;
@@ -1295,7 +1357,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             // Handle click based on action
             if (actionMode == ActionModes.Select || actionMode == ActionModes.Remove)
             {
-                TransferItem(item, remoteItems, basketItems, CanCarryAmount(item), equip: !item.IsAStack() && actionMode == ActionModes.Select);
+                TransferItem(item, remoteItems, basketItems, 100000, equip: !item.IsAStack() && actionMode == ActionModes.Select);
             }
             else if (actionMode == ActionModes.Info)
             {
