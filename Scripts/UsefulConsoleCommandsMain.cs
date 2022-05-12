@@ -12,13 +12,9 @@ using DaggerfallWorkshop.Game;
 using DaggerfallWorkshop.Game.Entity;
 using DaggerfallWorkshop.Game.Utility.ModSupport;
 using DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings;
-using DaggerfallWorkshop.Game.Utility;
 using DaggerfallWorkshop.Game.MagicAndEffects;
 using UnityEngine;
 using System;
-using DaggerfallWorkshop.Game.Serialization;
-using DaggerfallWorkshop.Game.MagicAndEffects.MagicEffects;
-using DaggerfallWorkshop.Game.Formulas;
 using DaggerfallWorkshop;
 using Wenzil.Console;
 using DaggerfallWorkshop.Game.Items;
@@ -26,9 +22,6 @@ using DaggerfallWorkshop.Game.UserInterfaceWindows;
 using DaggerfallConnect;
 using DaggerfallWorkshop.Game.Questing;
 using System.Collections.Generic;
-using DaggerfallConnect.Utility;
-using DaggerfallConnect.Arena2;
-using DaggerfallWorkshop.Utility;
 using DaggerfallWorkshop.Game.UserInterface;
 
 namespace UsefulConsoleCommands
@@ -64,7 +57,7 @@ namespace UsefulConsoleCommands
         {
             Debug.Log("Begin mod init: Useful Console Commands");
 
-            mod.LoadSettings();
+            LoadSettings();
 
             RegisterModConsoleCommands(); // Main bulk of mod features are in these added console commands.
 
@@ -73,9 +66,9 @@ namespace UsefulConsoleCommands
 
         #region Settings
 
-        static void LoadSettings(ModSettings modSettings, ModSettingsChange change)
+        static void LoadSettings()
         {
-            Mod roleplayRealism = ModManager.Instance.GetMod("roleplayrealism");
+            Mod roleplayRealism = ModManager.Instance.GetMod("RoleplayRealism");
             RolePlayRealismBandagingModule = false;
             if (roleplayRealism != null)
             {
@@ -83,7 +76,7 @@ namespace UsefulConsoleCommands
                 RolePlayRealismBandagingModule = rolePlayRealismSettings.GetBool("Modules", "bandaging");
             }
 
-            Mod repairTools = ModManager.Instance.GetMod("repairtools");
+            Mod repairTools = ModManager.Instance.GetMod("RepairTools");
             RepairToolsCheck = false;
             if (repairTools != null)
             {

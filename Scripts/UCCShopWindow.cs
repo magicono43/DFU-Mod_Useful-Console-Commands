@@ -14,7 +14,6 @@ using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
 using DaggerfallConnect.FallExe;
 using DaggerfallConnect.Utility;
-using DaggerfallWorkshop.Game.Banking;
 using DaggerfallWorkshop.Game.Entity;
 using DaggerfallWorkshop.Game.Formulas;
 using DaggerfallWorkshop.Game.Guilds;
@@ -1150,7 +1149,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
             if (UsefulConsoleCommands.UsefulConsoleCommandsMain.RepairToolsCheck)
             {
-                for (int i = 800; i < 805; i++) // Test later to see if it gives all tools or not, otherwise will have to change these loop values a bit.
+                for (int i = 800; i < 806; i++) // Test later to see if it gives all tools or not, otherwise will have to change these loop values a bit.
                 {
                     groupIndex = DaggerfallUnity.Instance.ItemHelper.GetGroupIndex(ItemGroups.UselessItems2, i);
                     newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, groupIndex);
