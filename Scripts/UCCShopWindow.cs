@@ -356,8 +356,8 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                         items = AddAllArtifactsHelper(items); return items;
                     case "clothing":
                         items = AddAllClothingHelper(items); return items;
-                    case "books":
-                        items = AddAllBooksHelper(items); return items;
+                    //case "books":
+                        //items = AddAllBooksHelper(items); return items; Just removed this for now, because when trying to build the mod apparently bookreplacement is internal and won't work here.
                     case "religious":
                         items = AddReligiousItemsHelper(items); return items;
                     case "gems":
@@ -975,7 +975,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             }
         }
 
-        public static ItemCollection AddAllBooksHelper(ItemCollection items) // ItemHelper.bookIDNameMapping is readonly private currently, so just do lazy approach for now.
+        /*public static ItemCollection AddAllBooksHelper(ItemCollection items) // ItemHelper.bookIDNameMapping is readonly private currently, so just do lazy approach for now.
         {
             DaggerfallUnityItem newItem = null;
             LoadBookIDNameMapping(); // So this hacky-lazy approach seems to have worked fine so far, not optimal but if it works good enough for now I suppose.
@@ -1046,7 +1046,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
             if (DaggerfallUnity.Settings.AssetInjection)
                 DaggerfallWorkshop.Utility.AssetInjection.BookReplacement.FindAdditionalBooks(bookIDNameMapping);
-        }
+        }*/
 
         public static ItemCollection AddReligiousItemsHelper(ItemCollection items)
         {
