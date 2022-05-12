@@ -3,11 +3,11 @@
     "ModVersion": "1.00",
     "ModAuthor": "Kirk.O",
     "ContactInfo": "kirkoliveri@gmail.com",
-    "DFUnity_Version": "0.13.4",
+    "DFUnity_Version": "0.13.5",
     "ModDescription": "Adds Various Useful Console Commands To The Already Existing Catalogue In DFU.",
-    "GUID": "3bc24b02-1dee-4e38-8554-c432001b86af",
+    "GUID": "22271e81-d258-41f9-95a7-fe2855ee43d0",
     "Files": [
-        "Assets/Game/Mods/DFU-Mod_Basic-Magic-Regen/modsettings.json",
-        "Assets/Game/Mods/DFU-Mod_Basic-Magic-Regen/Scripts/BasicMagicRegenMain.cs"
+        "Assets/Game/Mods/DFU-Mod_Useful-Console-Commands/Scripts/UsefulConsoleCommandsMain.cs",
+		"Assets/Game/Mods/DFU-Mod_Useful-Console-Commands/Scripts/UCCShopWindow.cs"
     ]
 }

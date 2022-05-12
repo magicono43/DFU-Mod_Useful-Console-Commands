@@ -3,9 +3,9 @@
 // License:         MIT License (http://www.opensource.org/licenses/mit-license.php)
 // Author:          Kirk.O
 // Created On: 	    4/14/2022, 9:00 AM
-// Last Edit:		4/17/2020, 5:00 PM
+// Last Edit:		5/11/2022, 11:30 PM
 // Version:			1.00
-// Special Thanks:  Interkarma, Jefetienne, Hazelnut, Kab the Bird Ranger, Macadaynu, Ralzar, Billyloist
+// Special Thanks:  Interkarma, Jefetienne, Hazelnut, Kab the Bird Ranger, Macadaynu, Ralzar, Billyloist, Extract
 // Modifier:
 
 using DaggerfallWorkshop.Game;
@@ -44,13 +44,6 @@ namespace UsefulConsoleCommands
 
         static Mod mod;
 
-        // Options
-        public static int MagicRegenType { get; set; }
-        public static int FlatOrPercent { get; set; }
-        public static int TickRegenFrequency { get; set; }
-        public static float RegenAmountModifier { get; set; }
-        public static float RestRegenModifier { get; set; }
-
         public static bool RolePlayRealismBandagingModule { get; set; }
         public static bool RepairToolsCheck { get; set; }
         public static bool RealisticWagonCheck { get; set; }
@@ -63,8 +56,6 @@ namespace UsefulConsoleCommands
         {
             mod = initParams.Mod;
             instance = new GameObject("UsefulConsoleCommands").AddComponent<UsefulConsoleCommandsMain>(); // Add script to the scene.
-
-            mod.LoadSettingsCallback = LoadSettings; // To enable use of the "live settings changes" feature in-game.
 
             mod.IsReady = true;
         }
@@ -84,13 +75,6 @@ namespace UsefulConsoleCommands
 
         static void LoadSettings(ModSettings modSettings, ModSettingsChange change)
         {
-            MagicRegenType = mod.GetSettings().GetValue<int>("Options", "RegenType");
-            FlatOrPercent = mod.GetSettings().GetValue<int>("Options", "FlatOrPercentageBased");
-            TickRegenFrequency = mod.GetSettings().GetValue<int>("Options", "TickFrequency");
-            RegenAmountModifier = mod.GetSettings().GetValue<float>("Options", "RegenMulti");
-            RestRegenModifier = mod.GetSettings().GetValue<float>("Options", "RestMulti");
-
-
             Mod roleplayRealism = ModManager.Instance.GetMod("roleplayrealism");
             RolePlayRealismBandagingModule = false;
             if (roleplayRealism != null)
@@ -143,31 +127,6 @@ namespace UsefulConsoleCommands
             return ClimatesAndCaloriesCheck;
         }
 
-        public static int GetMagicRegenType()
-        {
-            return MagicRegenType;
-        }
-
-        public static int GetFlatOrPercent()
-        {
-            return FlatOrPercent;
-        }
-
-        public static int GetTickRegenFrequency()
-        {
-            return TickRegenFrequency;
-        }
-
-        public static float GetRegenAmountModifier()
-        {
-            return RegenAmountModifier;
-        }
-
-        public static float GetRestRegenModifier()
-        {
-            return RestRegenModifier;
-        }
-
         public static void RegisterModConsoleCommands()
         {
             Debug.Log("[UsefulConsoleCommands] Trying to register console commands.");
@@ -175,16 +134,17 @@ namespace UsefulConsoleCommands
             {
                 ConsoleCommandsDatabase.RegisterCommand(ChangePlayerAttribute.command, ChangePlayerAttribute.description, ChangePlayerAttribute.usage, ChangePlayerAttribute.Execute); // tested
                 ConsoleCommandsDatabase.RegisterCommand(ChangePlayerSkill.command, ChangePlayerSkill.description, ChangePlayerSkill.usage, ChangePlayerSkill.Execute); // tested
-                ConsoleCommandsDatabase.RegisterCommand(EmptyInventory.command, EmptyInventory.description, EmptyInventory.usage, EmptyInventory.Execute); // tested
-                ConsoleCommandsDatabase.RegisterCommand(CreateInfiniteTorch.command, CreateInfiniteTorch.description, CreateInfiniteTorch.usage, CreateInfiniteTorch.Execute); // tested
-                ConsoleCommandsDatabase.RegisterCommand(CleanupCorpses.command, CleanupCorpses.description, CleanupCorpses.usage, CleanupCorpses.Execute); // tested
-                ConsoleCommandsDatabase.RegisterCommand(LetMeSleep.command, LetMeSleep.description, LetMeSleep.usage, LetMeSleep.Execute); // tested
-                ConsoleCommandsDatabase.RegisterCommand(OpenShop.command, OpenShop.description, OpenShop.usage, OpenShop.Execute); // tested
                 ConsoleCommandsDatabase.RegisterCommand(ChangeGender.command, ChangeGender.description, ChangeGender.usage, ChangeGender.Execute); // tested
                 ConsoleCommandsDatabase.RegisterCommand(ChangeRace.command, ChangeRace.description, ChangeRace.usage, ChangeRace.Execute); // tested
                 ConsoleCommandsDatabase.RegisterCommand(ChangeFace.command, ChangeFace.description, ChangeFace.usage, ChangeFace.Execute); // tested
+                ConsoleCommandsDatabase.RegisterCommand(OpenShop.command, OpenShop.description, OpenShop.usage, OpenShop.Execute); // tested
+                ConsoleCommandsDatabase.RegisterCommand(CleanupCorpses.command, CleanupCorpses.description, CleanupCorpses.usage, CleanupCorpses.Execute); // tested
+                ConsoleCommandsDatabase.RegisterCommand(EmptyInventory.command, EmptyInventory.description, EmptyInventory.usage, EmptyInventory.Execute); // tested
+                ConsoleCommandsDatabase.RegisterCommand(LetMeSleep.command, LetMeSleep.description, LetMeSleep.usage, LetMeSleep.Execute); // tested
+                ConsoleCommandsDatabase.RegisterCommand(FastFlying.command, FastFlying.description, FastFlying.usage, FastFlying.Execute); // tested
                 ConsoleCommandsDatabase.RegisterCommand(ClearMagic.command, ClearMagic.description, ClearMagic.usage, ClearMagic.Execute); // tested
                 ConsoleCommandsDatabase.RegisterCommand(ViewNPCReputation.command, ViewNPCReputation.description, ViewNPCReputation.usage, ViewNPCReputation.Execute); // tested
+                ConsoleCommandsDatabase.RegisterCommand(CreateInfiniteTorch.command, CreateInfiniteTorch.description, CreateInfiniteTorch.usage, CreateInfiniteTorch.Execute); // tested
                 ConsoleCommandsDatabase.RegisterCommand(QuestTaskToggle.command, QuestTaskToggle.description, QuestTaskToggle.usage, QuestTaskToggle.Execute); // tested
                 //ConsoleCommandsDatabase.RegisterCommand(QuestTesting1.command, QuestTesting1.description, QuestTesting1.usage, QuestTesting1.Execute);
                 //ConsoleCommandsDatabase.RegisterCommand(TeleportTo.command, TeleportTo.description, TeleportTo.usage, TeleportTo.Execute);
@@ -196,7 +156,7 @@ namespace UsefulConsoleCommands
             }
         }
 
-        private static class ChangePlayerAttribute // No clue if stuff might break with attributes being raised above 100, but oh well, that's up to the user to find out if they want.
+        private static class ChangePlayerAttribute
         {
             public static readonly string command = "setattrib";
             public static readonly string description = "Changes the specified attribute's value, between 1 and 1000.";
@@ -272,7 +232,7 @@ namespace UsefulConsoleCommands
             }
         }
 
-        private static class ChangePlayerSkill // No clue if stuff might break with skills being raised above 100, but oh well, that's up to the user to find out if they want.
+        private static class ChangePlayerSkill
         {
             public static readonly string command = "setskill";
             public static readonly string description = "Changes the specified skill's value, between 1 and 1000.";
@@ -777,266 +737,6 @@ namespace UsefulConsoleCommands
             }
         }
 
-        private static class EmptyInventory
-        {
-            public static readonly string command = "emptyinventory";
-            public static readonly string description = "Removes everything from your inventory, add additional modifier for more control of what is removed.";
-            public static readonly string usage = "emptyinventory [modifier]; try something like: try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon' or 'emptyinventory gear' to keep and equipped items. Without any modifier word, quest items, light sources, horse, wagon, letters of credit, and the spellbook will be preserved.";
-
-            public static string Execute(params string[] args)
-            {
-                if (args.Length > 1) return "Invalid entry, see usage notes.";
-
-                GameObject player = GameManager.Instance.PlayerObject;
-                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
-                ItemCollection playerItems = playerEntity.Items;
-                ItemCollection wagonItems = playerEntity.WagonItems;
-                int invSize = playerItems.Count;
-                int h = 0;
-
-                if (player != null && args.Length == 0)
-                {
-                    for (int i = 0; i < invSize; i++)
-                    {
-                        DaggerfallUnityItem item = playerEntity.Items.GetItem(h);
-                        h++;
-
-                        if (item.IsQuestItem || item.IsLightSource || item.ItemGroup == ItemGroups.Transportation || (item.ItemGroup == ItemGroups.MiscItems && item.TemplateIndex == (int)MiscItems.Spellbook) || (item.ItemGroup == ItemGroups.MiscItems && item.TemplateIndex == (int)MiscItems.Letter_of_credit) || (item.ItemGroup == ItemGroups.UselessItems2 && item.TemplateIndex == (int)UselessItems2.Oil))
-                            continue; // By default, ignore quest items, light sources, horse, wagon, letters of credit, and the spellbook item.
-                        else
-                        {
-                            playerItems.RemoveItem(item);
-                            h--;
-                        }
-                    }
-                    return "Removed all items from your inventory excluding quest-items, light sources, horse, wagon, letters of credit, and spellbook.";
-                }
-                else if (player != null && args.Length != 0)
-                {
-                    switch (args[0])
-                    {
-                        case "all":
-                        case "clear":
-                        case "everything":
-                        case "completely":
-                            playerEntity.GoldPieces = 0;
-                            playerEntity.LightSource = null;
-                            playerItems.Clear(); // This command clears literally everything from your inventory.
-                            return "Removed ALL items from your inventory, including gold.";
-                        case "wagon":
-                        case "cart":
-                            wagonItems.Clear(); // This command clears everything from your wagon inventory.
-                            return "Removed all items from your wagon inventory.";
-                        case "equip":
-                        case "gear":
-                        case "keepgear":
-                        case "keepequip":
-                        case "saveequip":
-                        case "savegear":
-                        case "keep_equip":
-                        case "save_equip":
-                        case "keep_gear":
-                        case "save_gear":
-                            for (int i = 0; i < invSize; i++)
-                            {
-                                DaggerfallUnityItem item = playerEntity.Items.GetItem(h);
-                                h++;
-
-                                if (item.IsEquipped || (item.ItemGroup == ItemGroups.MiscItems && item.TemplateIndex == (int)MiscItems.Spellbook))
-                                    continue; // Ignore all equipped items and the spellbook item.
-                                else
-                                {
-                                    playerItems.RemoveItem(item);
-                                    h--;
-                                }
-                            }
-                            return "Removed all items from your inventory excluding any items you have equipped, such as armor, clothing, weapons, accessories, spellbook, etc.";
-                        default:
-                            return "Invalid argument, try something like: try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon' or 'emptyinventory gear' to keep and equipped items. Without any modifier word, quest items, light sources, horse, wagon, letters of credit, and the spellbook will be preserved.";
-                    }
-                }
-                else
-                    return "Error - Something went wrong.";
-            }
-        }
-
-        private static class CreateInfiniteTorch
-        {
-            public static readonly string command = "infinitetorch";
-            public static readonly string description = "Creates a torch item with practically infinite durability that won't burn out.";
-            public static readonly string usage = "infinitetorch; try something like: 'infinitetorch'.";
-
-            public static string Execute(params string[] args)
-            {
-                if (args.Length > 0) return "Invalid entry, see usage notes.";
-
-                GameObject player = GameManager.Instance.PlayerObject;
-                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
-                ItemCollection playerItems = playerEntity.Items;
-
-                if (player != null)
-                {
-                    DaggerfallUnityItem item = ItemBuilder.CreateItem(ItemGroups.UselessItems2, (int)UselessItems2.Torch);
-                    item.RenameItem("Infinite Torch");
-                    item.maxCondition = 999999;
-                    item.currentCondition = 999999;
-                    playerItems.AddItem(item);
-                    return "Created the 'Infinite Torch', with this you will never be left in the dark.";
-                }
-                else
-                    return "Error - Something went wrong.";
-            }
-        }
-
-        private static class CleanupCorpses
-        {
-            public static readonly string command = "clearcorpses";
-            public static readonly string description = "Destroys all corpse objects from the current scene, add modifier words to specify different types to remove.";
-            public static readonly string usage = "clearcorpses [modifier]; try something like: 'clearcorpses' or 'clearcorpses all'. Without any modifier only corpses are removed, if 'all' is used, all loot-piles are removed from the current scene.";
-
-            public static string Execute(params string[] args)
-            {
-                if (args.Length > 1) return "Invalid entry, see usage notes.";
-
-                GameObject player = GameManager.Instance.PlayerObject;
-                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
-                DaggerfallLoot[] lootContainers = FindObjectsOfType<DaggerfallLoot>();
-                int count = 0;
-
-                if (player != null && args.Length == 0)
-                {
-                    if (lootContainers != null)
-                    {
-                        for (int i = 0; i < lootContainers.Length; i++)
-                        {
-                            GameObject gameObject = lootContainers[i].gameObject;
-
-                            if (lootContainers[i].ContainerType == LootContainerTypes.CorpseMarker)
-                            {
-                                Destroy(gameObject);
-                                count++;
-                            }
-                        }
-                    }
-                    return string.Format("Removed {0} corpses.", count);
-                }
-                else if (player != null && args.Length != 0)
-                {
-                    switch (args[0])
-                    {
-                        case "all":
-                        case "everything":
-                            if (lootContainers != null)
-                            {
-                                for (int i = 0; i < lootContainers.Length; i++)
-                                {
-                                    GameObject gameObject = lootContainers[i].gameObject;
-
-                                    if (lootContainers[i].ContainerType == LootContainerTypes.CorpseMarker || lootContainers[i].ContainerType == LootContainerTypes.RandomTreasure || lootContainers[i].ContainerType == LootContainerTypes.DroppedLoot)
-                                    {
-                                        Destroy(gameObject);
-                                        count++;
-                                    }
-                                }
-                            }
-                            return string.Format("Removed {0} corpses and loot-piles.", count);
-                        default:
-                            return "Invalid attribute, try something like: 'clearcorpses' or 'clearcorpses all'. Without any modifier only corpses are removed, if 'all' is used, all loot-piles are removed from the current scene.";
-                    }
-                }
-                else
-                    return "Error - Something went wrong.";
-            }
-        }
-
-        private static class LetMeSleep
-        {
-            public static readonly string command = "letmesleep";
-            public static readonly string description = "Kills all enemies within range that may be disallowing you to rest, but leaves others otherside this range alive.";
-            public static readonly string usage = "letmesleep; try something like: 'letmesleep'.";
-
-            public static string Execute(params string[] args)
-            {
-                if (args.Length > 0) return "Invalid entry, see usage notes.";
-
-                GameObject player = GameManager.Instance.PlayerObject;
-                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
-                DaggerfallEntityBehaviour[] entityBehaviours = FindObjectsOfType<DaggerfallEntityBehaviour>();
-                int count = 0;
-
-                if (player != null)
-                {
-                    for (int i = 0; i < entityBehaviours.Length; i++)
-                    {
-                        DaggerfallEntityBehaviour entityBehaviour = entityBehaviours[i];
-                        if (entityBehaviour.EntityType == EntityTypes.EnemyMonster || entityBehaviour.EntityType == EntityTypes.EnemyClass)
-                        {
-                            EnemySenses enemySenses = entityBehaviour.GetComponent<EnemySenses>();
-                            if (enemySenses)
-                            {
-                                // Check if enemy can actively target player
-                                bool enemyCanSeePlayer = enemySenses.Target == GameManager.Instance.PlayerEntityBehaviour && enemySenses.TargetInSight;
-
-                                // Allow for a shorter test distance if enemy is unaware of player while resting
-                                if (!enemyCanSeePlayer && Vector3.Distance(entityBehaviour.transform.position, GameManager.Instance.PlayerController.transform.position) > 12f) // 12f is "restingDistance"
-                                    continue;
-
-                                // Can enemy see player or is close enough they would be spawned in classic?
-                                if (enemyCanSeePlayer || enemySenses.WouldBeSpawnedInClassic)
-                                {
-                                    // Is it hostile or pacified?
-                                    EnemyMotor enemyMotor = entityBehaviour.GetComponent<EnemyMotor>();
-                                    EnemyEntity enemyEntity = entityBehaviour.Entity as EnemyEntity;
-                                    if (enemyMotor.IsHostile && enemyEntity.MobileEnemy.Team != MobileTeams.PlayerAlly)
-                                    {
-                                        entityBehaviour.Entity.SetHealth(0);
-                                        count++;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    return string.Format("Killed: {0} enemies, that would be disallowing you to rest.", count);
-                }
-                else
-                    return "Error - Something went wrong.";
-            }
-        }
-
-        private static class OpenShop
-        {
-            public static readonly string command = "openshop";
-            public static readonly string description = "Opens a shop interface with items you can freely take or try on, items populated depend on the given modifier words.";
-            public static readonly string usage = "openshop [modifier] [modifier2] [gender] [race]; try something like: 'openshop' will open a random shop shelf from a random shop type with a random quality. 'openshop alchemist' will open an alchemist shop shelf with a random quality. 'openshop pawnshop 15' will open a pawnshop shelf with a quality of 15. 'openshop artifacts' will open a shelf with all the artifacts in the game. 'openshop ingredients 8' will open a shelf with all ingredients 8 of each. 'openshop armor mithril female highelf' will open a shelf with all armor made of mithril with the body morphology for female elves. 'openshop clothing purple' will open a shelf with all clothing for your character's gender and race in the color purple. Try many different combinations, there are many specifications you can give to filter down your options in different ways.";
-
-            public static string Execute(params string[] args)
-            {
-                GameObject player = GameManager.Instance.PlayerObject;
-                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
-                ItemCollection playerItems = playerEntity.Items;
-                UCCShopWindow tradeWindow = new UCCShopWindow(DaggerfallUI.UIManager, null, UCCShopWindow.WindowModes.Buy, null);
-
-                if (args.Length >= 5)
-                    return "Error - Too many arguments, check the usage notes.";
-
-                if (player != null)
-                {
-                    tradeWindow.MerchantItems = UCCShopWindow.StockMagicShopShelf(args);
-
-                    if (tradeWindow.MerchantItems == null || tradeWindow.MerchantItems.Count < 1)
-                    {
-                        return "Error - No items were found, check the usage notes.";
-                    }
-
-                    DaggerfallUI.UIManager.PushWindow(tradeWindow);
-
-                    return "Opening Magic Shop Shelf.";
-                }
-                else
-                    return "Error - Something went wrong.";
-            }
-        }
-
         private static class ChangeGender
         {
             public static readonly string command = "changegender";
@@ -1288,6 +988,286 @@ namespace UsefulConsoleCommands
             }
         }
 
+        private static class OpenShop
+        {
+            public static readonly string command = "openshop";
+            public static readonly string description = "Opens a shop interface with items you can freely take or try on, items populated depend on the given modifier words.";
+            public static readonly string usage = "openshop [modifier] [modifier2] [gender] [race]; try something like: 'openshop' will open a random shop shelf from a random shop type with a random quality. 'openshop alchemist' will open an alchemist shop shelf with a random quality. 'openshop pawnshop 15' will open a pawnshop shelf with a quality of 15. 'openshop artifacts' will open a shelf with all the artifacts in the game. 'openshop ingredients 8' will open a shelf with all ingredients 8 of each. 'openshop armor mithril female highelf' will open a shelf with all armor made of mithril with the body morphology for female elves. 'openshop clothing purple' will open a shelf with all clothing for your character's gender and race in the color purple. Try many different combinations, there are many specifications you can give to filter down your options in different ways.";
+
+            public static string Execute(params string[] args)
+            {
+                GameObject player = GameManager.Instance.PlayerObject;
+                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
+                ItemCollection playerItems = playerEntity.Items;
+                UCCShopWindow tradeWindow = new UCCShopWindow(DaggerfallUI.UIManager, null, UCCShopWindow.WindowModes.Buy, null);
+
+                if (args.Length >= 5)
+                    return "Error - Too many arguments, check the usage notes.";
+
+                if (player != null)
+                {
+                    tradeWindow.MerchantItems = UCCShopWindow.StockMagicShopShelf(args);
+
+                    if (tradeWindow.MerchantItems == null || tradeWindow.MerchantItems.Count < 1)
+                    {
+                        return "Error - No items were found, check the usage notes.";
+                    }
+
+                    DaggerfallUI.UIManager.PushWindow(tradeWindow);
+
+                    return "Opening Magic Shop Shelf.";
+                }
+                else
+                    return "Error - Something went wrong.";
+            }
+        }
+
+        private static class CleanupCorpses
+        {
+            public static readonly string command = "clearcorpses";
+            public static readonly string description = "Destroys all corpse objects from the current scene, add modifier words to specify different types to remove.";
+            public static readonly string usage = "clearcorpses [modifier]; try something like: 'clearcorpses' or 'clearcorpses all'. Without any modifier only corpses are removed, if 'all' is used, all loot-piles are removed from the current scene.";
+
+            public static string Execute(params string[] args)
+            {
+                if (args.Length > 1) return "Invalid entry, see usage notes.";
+
+                GameObject player = GameManager.Instance.PlayerObject;
+                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
+                DaggerfallLoot[] lootContainers = FindObjectsOfType<DaggerfallLoot>();
+                int count = 0;
+
+                if (player != null && args.Length == 0)
+                {
+                    if (lootContainers != null)
+                    {
+                        for (int i = 0; i < lootContainers.Length; i++)
+                        {
+                            GameObject gameObject = lootContainers[i].gameObject;
+
+                            if (lootContainers[i].ContainerType == LootContainerTypes.CorpseMarker)
+                            {
+                                Destroy(gameObject);
+                                count++;
+                            }
+                        }
+                    }
+                    return string.Format("Removed {0} corpses.", count);
+                }
+                else if (player != null && args.Length != 0)
+                {
+                    switch (args[0])
+                    {
+                        case "all":
+                        case "everything":
+                            if (lootContainers != null)
+                            {
+                                for (int i = 0; i < lootContainers.Length; i++)
+                                {
+                                    GameObject gameObject = lootContainers[i].gameObject;
+
+                                    if (lootContainers[i].ContainerType == LootContainerTypes.CorpseMarker || lootContainers[i].ContainerType == LootContainerTypes.RandomTreasure || lootContainers[i].ContainerType == LootContainerTypes.DroppedLoot)
+                                    {
+                                        Destroy(gameObject);
+                                        count++;
+                                    }
+                                }
+                            }
+                            return string.Format("Removed {0} corpses and loot-piles.", count);
+                        default:
+                            return "Invalid attribute, try something like: 'clearcorpses' or 'clearcorpses all'. Without any modifier only corpses are removed, if 'all' is used, all loot-piles are removed from the current scene.";
+                    }
+                }
+                else
+                    return "Error - Something went wrong.";
+            }
+        }
+
+        private static class EmptyInventory
+        {
+            public static readonly string command = "emptyinventory";
+            public static readonly string description = "Removes everything from your inventory, add additional modifier for more control of what is removed.";
+            public static readonly string usage = "emptyinventory [modifier]; try something like: try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon' or 'emptyinventory gear' to keep and equipped items. Without any modifier word, quest items, light sources, horse, wagon, letters of credit, and the spellbook will be preserved.";
+
+            public static string Execute(params string[] args)
+            {
+                if (args.Length > 1) return "Invalid entry, see usage notes.";
+
+                GameObject player = GameManager.Instance.PlayerObject;
+                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
+                ItemCollection playerItems = playerEntity.Items;
+                ItemCollection wagonItems = playerEntity.WagonItems;
+                int invSize = playerItems.Count;
+                int h = 0;
+
+                if (player != null && args.Length == 0)
+                {
+                    for (int i = 0; i < invSize; i++)
+                    {
+                        DaggerfallUnityItem item = playerEntity.Items.GetItem(h);
+                        h++;
+
+                        if (item.IsQuestItem || item.IsLightSource || item.ItemGroup == ItemGroups.Transportation || (item.ItemGroup == ItemGroups.MiscItems && item.TemplateIndex == (int)MiscItems.Spellbook) || (item.ItemGroup == ItemGroups.MiscItems && item.TemplateIndex == (int)MiscItems.Letter_of_credit) || (item.ItemGroup == ItemGroups.UselessItems2 && item.TemplateIndex == (int)UselessItems2.Oil))
+                            continue; // By default, ignore quest items, light sources, horse, wagon, letters of credit, and the spellbook item.
+                        else
+                        {
+                            playerItems.RemoveItem(item);
+                            h--;
+                        }
+                    }
+                    return "Removed all items from your inventory excluding quest-items, light sources, horse, wagon, letters of credit, and spellbook.";
+                }
+                else if (player != null && args.Length != 0)
+                {
+                    switch (args[0])
+                    {
+                        case "all":
+                        case "clear":
+                        case "everything":
+                        case "completely":
+                            playerEntity.GoldPieces = 0;
+                            playerEntity.LightSource = null;
+                            playerItems.Clear(); // This command clears literally everything from your inventory.
+                            return "Removed ALL items from your inventory, including gold.";
+                        case "wagon":
+                        case "cart":
+                            wagonItems.Clear(); // This command clears everything from your wagon inventory.
+                            return "Removed all items from your wagon inventory.";
+                        case "equip":
+                        case "gear":
+                        case "keepgear":
+                        case "keepequip":
+                        case "saveequip":
+                        case "savegear":
+                        case "keep_equip":
+                        case "save_equip":
+                        case "keep_gear":
+                        case "save_gear":
+                            for (int i = 0; i < invSize; i++)
+                            {
+                                DaggerfallUnityItem item = playerEntity.Items.GetItem(h);
+                                h++;
+
+                                if (item.IsEquipped || (item.ItemGroup == ItemGroups.MiscItems && item.TemplateIndex == (int)MiscItems.Spellbook))
+                                    continue; // Ignore all equipped items and the spellbook item.
+                                else
+                                {
+                                    playerItems.RemoveItem(item);
+                                    h--;
+                                }
+                            }
+                            return "Removed all items from your inventory excluding any items you have equipped, such as armor, clothing, weapons, accessories, spellbook, etc.";
+                        default:
+                            return "Invalid argument, try something like: try something like: 'emptyinventory' or 'emptyinventory all' or 'emptyinventory wagon' or 'emptyinventory gear' to keep and equipped items. Without any modifier word, quest items, light sources, horse, wagon, letters of credit, and the spellbook will be preserved.";
+                    }
+                }
+                else
+                    return "Error - Something went wrong.";
+            }
+        }
+
+        private static class LetMeSleep
+        {
+            public static readonly string command = "letmesleep";
+            public static readonly string description = "Kills all enemies within range that may be disallowing you to rest, but leaves others otherside this range alive.";
+            public static readonly string usage = "letmesleep; try something like: 'letmesleep'.";
+
+            public static string Execute(params string[] args)
+            {
+                if (args.Length > 0) return "Invalid entry, see usage notes.";
+
+                GameObject player = GameManager.Instance.PlayerObject;
+                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
+                DaggerfallEntityBehaviour[] entityBehaviours = FindObjectsOfType<DaggerfallEntityBehaviour>();
+                int count = 0;
+
+                if (player != null)
+                {
+                    for (int i = 0; i < entityBehaviours.Length; i++)
+                    {
+                        DaggerfallEntityBehaviour entityBehaviour = entityBehaviours[i];
+                        if (entityBehaviour.EntityType == EntityTypes.EnemyMonster || entityBehaviour.EntityType == EntityTypes.EnemyClass)
+                        {
+                            EnemySenses enemySenses = entityBehaviour.GetComponent<EnemySenses>();
+                            if (enemySenses)
+                            {
+                                // Check if enemy can actively target player
+                                bool enemyCanSeePlayer = enemySenses.Target == GameManager.Instance.PlayerEntityBehaviour && enemySenses.TargetInSight;
+
+                                // Allow for a shorter test distance if enemy is unaware of player while resting
+                                if (!enemyCanSeePlayer && Vector3.Distance(entityBehaviour.transform.position, GameManager.Instance.PlayerController.transform.position) > 12f) // 12f is "restingDistance"
+                                    continue;
+
+                                // Can enemy see player or is close enough they would be spawned in classic?
+                                if (enemyCanSeePlayer || enemySenses.WouldBeSpawnedInClassic)
+                                {
+                                    // Is it hostile or pacified?
+                                    EnemyMotor enemyMotor = entityBehaviour.GetComponent<EnemyMotor>();
+                                    EnemyEntity enemyEntity = entityBehaviour.Entity as EnemyEntity;
+                                    if (enemyMotor.IsHostile && enemyEntity.MobileEnemy.Team != MobileTeams.PlayerAlly)
+                                    {
+                                        entityBehaviour.Entity.SetHealth(0);
+                                        count++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return string.Format("Killed: {0} enemies, that would be disallowing you to rest.", count);
+                }
+                else
+                    return "Error - Something went wrong.";
+            }
+        }
+
+        private static class FastFlying
+        {
+            public static readonly string command = "fastflying";
+            public static readonly string description = "Toggle noclip by turning off all collisions and activates levitate, but with super sonic speed as well.";
+            public static readonly string usage = "fastflying [n]; try something like: 'fastflying' or for a custom speed setting, 'fastflying 100' or even 'fastflying 52.8'";
+
+            public static string Execute(params string[] args)
+            {
+                PlayerEntity playerEntity = GameManager.Instance.PlayerEntity;
+                LevitateMotor levitateMotor = GameManager.Instance.PlayerMotor.GetComponent<LevitateMotor>();
+                float n = 4.0f;
+
+                if (args.Length > 1)
+                    return "Error - Too many arguments, check the usage notes.";
+
+                if (args.Length > 0)
+                {
+                    if (!float.TryParse(args[0], out n))
+                        return string.Format("`{0}` is not a number, please use a number for [n].", args[0]);
+                    if (n < 4.0f)
+                        return "Invalid amount, [n] must be a value greater than or equal to 4.0, since this is the default levitation speed.";
+                }
+
+                if (playerEntity != null && levitateMotor != null)
+                {
+                    playerEntity.NoClipMode = !playerEntity.NoClipMode;
+                    levitateMotor.IsLevitating = playerEntity.NoClipMode;
+                    GameManager.Instance.PlayerController.gameObject.layer = playerEntity.NoClipMode ? LayerMask.NameToLayer("NoclipLayer") : LayerMask.NameToLayer("Player");
+
+                    if (playerEntity.NoClipMode)
+                    {
+                        if (args.Length == 1)
+                            levitateMotor.LevitateMoveSpeed = n; // Custom Speed Value
+                        else
+                            levitateMotor.LevitateMoveSpeed = 100.0f; // Default None Custom Speed Value
+                    }
+                    else
+                    {
+                        levitateMotor.LevitateMoveSpeed = 4.0f; // Default Levitation Speed, I.E. Very Slow
+                    }
+
+                    return string.Format("Fast Flying enabled: {0}", playerEntity.NoClipMode);
+                }
+                else
+                    return "Error - Something went wrong.";
+            }
+        }
+
         private static class ClearMagic
         {
             public static readonly string command = "clearmagic";
@@ -1313,7 +1293,7 @@ namespace UsefulConsoleCommands
             }
         }
 
-        private static class ViewNPCReputation // Finish this command tomorrow and finish any of the others I had planned and finally release this mod to the public and start on next project, finally.
+        private static class ViewNPCReputation
         {
             public static readonly string command = "viewnpcrep";
             public static readonly string description = "Shows the associated faction reptuation you currently have with the last clicked NPC.";
@@ -1323,15 +1303,45 @@ namespace UsefulConsoleCommands
             {
                 GameObject player = GameManager.Instance.PlayerObject;
                 PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
+                StaticNPC lastClicked = QuestMachine.Instance.LastNPCClicked;
 
                 if (args.Length > 0)
                     return "Error - Too many arguments, check the usage notes.";
 
+                if (lastClicked != null)
+                {
+                    int reputation = GameManager.Instance.PlayerEntity.FactionData.GetReputation(lastClicked.Data.factionID);
+                    return string.Format("Your reputation with {0} is currently '{1}'", lastClicked.DisplayName, reputation);
+                }
+                else if (lastClicked == null)
+                    return "Error - Could not find an NPC last clicked.";
+                else
+                    return "Error - Something went wrong.";
+            }
+        }
+
+        private static class CreateInfiniteTorch
+        {
+            public static readonly string command = "infinitetorch";
+            public static readonly string description = "Creates a torch item with practically infinite durability that won't burn out.";
+            public static readonly string usage = "infinitetorch; try something like: 'infinitetorch'.";
+
+            public static string Execute(params string[] args)
+            {
+                if (args.Length > 0) return "Invalid entry, see usage notes.";
+
+                GameObject player = GameManager.Instance.PlayerObject;
+                PlayerEntity playerEntity = player.GetComponent<DaggerfallEntityBehaviour>().Entity as PlayerEntity;
+                ItemCollection playerItems = playerEntity.Items;
+
                 if (player != null)
                 {
-                    EntityEffectManager manager = GameManager.Instance.PlayerEffectManager;
-                    manager.ClearSpellBundles();
-                    return "All magic spell bundles removed from you.";
+                    DaggerfallUnityItem item = ItemBuilder.CreateItem(ItemGroups.UselessItems2, (int)UselessItems2.Torch);
+                    item.RenameItem("Infinite Torch");
+                    item.maxCondition = 999999;
+                    item.currentCondition = 999999;
+                    playerItems.AddItem(item);
+                    return "Created the 'Infinite Torch', with this you will never be left in the dark.";
                 }
                 else
                     return "Error - Something went wrong.";

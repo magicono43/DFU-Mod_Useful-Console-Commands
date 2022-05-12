@@ -3,9 +3,9 @@
 // License:         MIT License (http://www.opensource.org/licenses/mit-license.php)
 // Author:          Kirk.O
 // Created On: 	    4/14/2022, 9:00 AM
-// Last Edit:		4/17/2020, 5:00 PM
+// Last Edit:		5/11/2022, 11:30 PM
 // Version:			1.00
-// Special Thanks:  Interkarma, Jefetienne, Hazelnut, Kab the Bird Ranger, Macadaynu, Ralzar, Billyloist
+// Special Thanks:  Interkarma, Jefetienne, Hazelnut, Kab the Bird Ranger, Macadaynu, Ralzar, Billyloist, Extract
 // Modifier:
 
 using System;
@@ -1116,25 +1116,34 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
         public static ItemCollection AddConsumableItemsHelper(ItemCollection items)
         {
             DaggerfallUnityItem newItem = null;
+            int groupIndex = 0;
 
-            newItem = new DaggerfallUnityItem(ItemGroups.Weapons, (int)Weapons.Arrow);
+            groupIndex = DaggerfallUnity.Instance.ItemHelper.GetGroupIndex(ItemGroups.Weapons, (int)Weapons.Arrow);
+            newItem = new DaggerfallUnityItem(ItemGroups.Weapons, groupIndex);
             newItem.stackCount = 500;
             items.AddItem(newItem);
 
-            newItem = new DaggerfallUnityItem(ItemGroups.MiscItems, (int)MiscItems.Soul_trap);
+            groupIndex = DaggerfallUnity.Instance.ItemHelper.GetGroupIndex(ItemGroups.MiscItems, (int)MiscItems.Soul_trap);
+            newItem = new DaggerfallUnityItem(ItemGroups.MiscItems, groupIndex);
             newItem.TrappedSoulType = MobileTypes.None; // Empty
             items.AddItem(newItem);
 
             if (DaggerfallUnity.Settings.PlayerTorchFromItems)
             {
-                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, (int)UselessItems2.Oil);
+                groupIndex = DaggerfallUnity.Instance.ItemHelper.GetGroupIndex(ItemGroups.UselessItems2, (int)UselessItems2.Lantern);
+                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, groupIndex);
+                items.AddItem(newItem);
+
+                groupIndex = DaggerfallUnity.Instance.ItemHelper.GetGroupIndex(ItemGroups.UselessItems2, (int)UselessItems2.Oil);
+                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, groupIndex);
                 newItem.stackCount = 500;
                 items.AddItem(newItem);
             }
 
             if (UsefulConsoleCommands.UsefulConsoleCommandsMain.RolePlayRealismBandagingModule)
             {
-                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, (int)UselessItems2.Bandage);
+                groupIndex = DaggerfallUnity.Instance.ItemHelper.GetGroupIndex(ItemGroups.UselessItems2, (int)UselessItems2.Bandage);
+                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, groupIndex);
                 newItem.stackCount = 500;
                 items.AddItem(newItem);
             }
@@ -1143,32 +1152,35 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             {
                 for (int i = 800; i < 805; i++) // Test later to see if it gives all tools or not, otherwise will have to change these loop values a bit.
                 {
-                    newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, i);
+                    groupIndex = DaggerfallUnity.Instance.ItemHelper.GetGroupIndex(ItemGroups.UselessItems2, i);
+                    newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, groupIndex);
                     items.AddItem(newItem);
                 }
             }
 
             if (UsefulConsoleCommands.UsefulConsoleCommandsMain.RealisticWagonCheck)
             {
-                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, 541); // Sugar Lumps
+                groupIndex = DaggerfallUnity.Instance.ItemHelper.GetGroupIndex(ItemGroups.UselessItems2, 541);
+                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, groupIndex); // Sugar Lumps
                 items.AddItem(newItem);
 
-                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, 542); // Wagon Parts
+                groupIndex = DaggerfallUnity.Instance.ItemHelper.GetGroupIndex(ItemGroups.UselessItems2, 542);
+                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, groupIndex); // Wagon Parts
                 items.AddItem(newItem);
             }
 
             if (UsefulConsoleCommands.UsefulConsoleCommandsMain.ClimatesAndCaloriesCheck)
             {
-                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, 530); // Camping Equipment
+                groupIndex = DaggerfallUnity.Instance.ItemHelper.GetGroupIndex(ItemGroups.UselessItems2, 530);
+                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, groupIndex); // Camping Equipment
                 items.AddItem(newItem);
 
-                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, 531); // Rations
+                groupIndex = DaggerfallUnity.Instance.ItemHelper.GetGroupIndex(ItemGroups.UselessItems2, 531);
+                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, groupIndex); // Rations
                 items.AddItem(newItem);
 
-                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, 539); // Waterskin
-                items.AddItem(newItem);
-
-                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, 540); // Tent
+                groupIndex = DaggerfallUnity.Instance.ItemHelper.GetGroupIndex(ItemGroups.UselessItems2, 539);
+                newItem = new DaggerfallUnityItem(ItemGroups.UselessItems2, groupIndex); // Waterskin
                 items.AddItem(newItem);
             }
 
@@ -1187,14 +1199,15 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             // Add any modded items registered in applicable groups
             for (int i = 0; i < Enum.GetNames(typeof(ItemGroups)).Length; i++)
             {
-                int[] customItemTemplates = GameManager.Instance.ItemHelper.GetCustomItemsForGroup((ItemGroups)i);
+                int[] customItemTemplates = DaggerfallUnity.Instance.ItemHelper.GetCustomItemsForGroup((ItemGroups)i);
                 if (customItemTemplates.Length > 0)
                 {
                     for (int n = 0; n < customItemTemplates.Length; n++)
                     {
-                        ItemTemplate itemTemplate = GameManager.Instance.ItemHelper.GetItemTemplate((ItemGroups)i, customItemTemplates[n]);
+                        ItemTemplate itemTemplate = DaggerfallUnity.Instance.ItemHelper.GetItemTemplate((ItemGroups)i, customItemTemplates[n]);
 
-                        DaggerfallUnityItem item = ItemBuilder.CreateItem((ItemGroups)i, customItemTemplates[n]);
+                        DaggerfallUnityItem item = ItemBuilder.CreateItem((ItemGroups)i, itemTemplate.index);
+                        //DaggerfallUnityItem item = ItemBuilder.CreateItem((ItemGroups)i, customItemTemplates[n]);
 
                         // Setup specific group stats
                         if ((ItemGroups)i == ItemGroups.Weapons)
